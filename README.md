@@ -6,7 +6,7 @@
 
 ## 🚀 使用链接
 
-👉 **https://ndshuge-cloud.github.io/ndshuge-python-academy/**
+👉 **https://ndshuge.github.io/ndshuge-python-academy/**
 
 手机、电脑、平板直接打开就能用。注册一个账号，进度自动云端同步，换设备接着学。
 

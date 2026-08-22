@@ -1,0 +1,1 @@
+fatal: unable to access 'https://github.com/ndshuge-cloud/ndshuge-python-academy.git/': Failed to connect to github.com:443 after 21047 ms: Could not connect to server
