@@ -861,31 +861,133 @@ var CHAPTERS = [
 },
 /*==APPEND_CHAPTERS==*/
 {
-  id:12, no:'Ⅻ', title:'项目一：外星人入侵', weeks:'第 12-14 周', diff:'★★★★★', full:false,
+  id:12, no:'Ⅻ', title:'项目一：外星人入侵', weeks:'第 12-14 周', diff:'★★★★★', full:true,
   story:{tutor:'诺兰·布什内尔（Nolan Bushnell, 1943–）', era:'美国 · 雅达利创始人 · 电子游戏之父',
     fact:'1972 年，布什内尔用 500 美元造出了雅达利的第一台街机 Pong，把电子游戏带进大众生活。他说过：所有好游戏都是「简单规则 + 即时反馈 + 越玩越难」。外星人入侵项目就是把这句话翻译成代码：Pygame 窗口、飞船移动、外星人舰队、子弹碰撞、记分牌。等你做完，你就是写过完整游戏的人了。',
     quote:'「游戏是让人心甘情愿去解决难题的东西。」 诺兰·布什内尔'},
   motto:'「完成一个作品，胜过读完十本书。」',
   mottoWho:'拉里·佩奇 · 开讲词',
-  map:['安装 Pygame','创建窗口','飞船类','事件循环','移动飞船','子弹','外星人舰队','碰撞检测','结束游戏','Play 按钮','提高难度','记分']
+  map:['安装 Pygame','创建窗口','飞船类','事件循环','移动飞船','子弹','外星人舰队','碰撞检测','结束游戏','Play 按钮','提高难度','记分'],
+  sections:[
+    {t:'项目规划：先画地图再出发', p:'写游戏之前，先想清楚三件事：<b>玩家做什么</b>（控制飞船左右移动、开炮）、<b>敌人怎么做</b>（外星人舰队逐渐逼近）、<b>怎么算赢</b>（消灭全部外星人、记分、闯关）。对应三个类：Ship（飞船）、Alien（外星人）、Bullet（子弹），再加一个控制状态的 Game 主类。先设计再写码，是佩奇的团队铁律：代码是地图，设计是航线。', code:'# 先列出类的骨架，再逐行填充\nclass Ship:\n    def __init__(self):\n        self.x = 0          # 位置\n    def update(self):\n        pass                # 待实现：左右移动\n\nclass Alien:\n    def __init__(self):\n        self.x = 0\n    def update(self):\n        pass                # 待实现：逼近飞船'},
+    {t:'安装 Pygame 与创建窗口', p:'pip install pygame 安装。创建游戏三件套：<b>屏幕</b>（pygame.display.set_mode）、<b>时钟</b>（控制帧率，避免游戏跑太快）、<b>主循环</b>（while 循环一直运行直到退出）。pygame.init() 初始化所有模块，pygame.quit() 退出时清理。窗口就是你的画布，游戏的一切都发生在这块画布上。', code:'import pygame\npygame.init()\nscreen = pygame.display.set_mode((1200, 800))\npygame.display.set_caption("外星人入侵")\nclock = pygame.time.Clock()\n\nwhile True:          # 游戏主循环\n    pygame.display.flip()   # 刷新画面\n    clock.tick(60)          # 每秒 60 帧'},
+    {t:'事件循环：游戏的心跳', p:'事件是玩家和系统发给游戏的信号：按了哪个键、点了关闭、鼠标动了。pygame.event.get() 一次取走所有待处理事件。主循环每圈做的三件事：<b>处理事件</b>（按需响应）→ <b>更新状态</b>（飞船位置、子弹飞行）→ <b>绘制画面</b>（把新状态画上去）。三步分离，游戏才不乱。', code:'while True:\n    # 第一步：处理事件\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            pygame.quit()\n            exit()\n        elif event.type == pygame.KEYDOWN:\n            if event.key == pygame.K_RIGHT:\n                ship.moving_right = True\n        elif event.type == pygame.KEYUP:\n            if event.key == pygame.K_RIGHT:\n                ship.moving_right = False\n    # 第二步：更新\n    ship.update()\n    # 第三步：绘制\n    screen.blit(ship.image, ship.rect)\n    pygame.display.flip()'},
+    {t:'飞船与移动：类的用武之地', p:'飞船是游戏里的第一个对象。Ship 类存它的图像、位置、速度，update 方法根据按键状态移动。按住右键移动：用一个布尔标志 moving_right，按下为 True 松开为 False，update 里判断。这样移动是连续的而不是点一下动一下。你学的类，在这里第一次变成了活物。', code:'class Ship:\n    def __init__(self, screen):\n        self.screen = screen\n        self.image = pygame.image.load("ship.png")\n        self.rect = self.image.get_rect()\n        self.moving_right = False\n        self.x = float(self.rect.x)   # 用浮点数防抖动\n    def update(self):\n        if self.moving_right:\n            self.x += 1.5             # 每帧向右移动\n        self.rect.x = int(self.x)'},
+    {t:'子弹与外星人：精灵与碰撞', p:'子弹、外星人都用 pygame.sprite.Sprite 组织成 group（编队）。group 的好处：一次 update 全部、一次 draw 全部、碰撞检测一条命令。检测碰撞：pygame.sprite.groupcollide(子弹组, 外星人组, True, True) 同时删除撞上的子弹和外星人。这就是「即时反馈」的实现：打中了，画面立刻有反应。', code:'from pygame.sprite import Sprite\n\nclass Bullet(Sprite):\n    def __init__(self, screen, ship):\n        super().__init__()\n        self.rect = pygame.Rect(0, 0, 3, 15)\n        self.rect.midtop = ship.rect.midtop\n        self.y = float(self.rect.y)\n    def update(self):\n        self.y -= 2                  # 子弹向上飞\n        self.rect.y = int(self.y)\n\n# 碰撞：删子弹也删外星人\nhits = pygame.sprite.groupcollide(bullets, aliens, True, True)'},
+    {t:'记分与难度：越玩越难', p:'游戏要有「越玩越难」的曲线：每消灭整队外星人，等级 +1，外星人移动速度加快。得分显示在屏幕角落（用 font 渲染文字）。Play 按钮控制游戏开始/暂停，游戏结束时显示结算。这三样合起来，游戏就从「能跑」变成「好玩」。', code:'score = 0\nalien_speed = 1.0\n\nif not aliens:            # 全队消灭\n    level += 1            # 提高难度\n    alien_speed += 0.5\n    create_fleet()        # 生成新的一队\n\n# 显示得分\nfont = pygame.font.SysFont(None, 48)\ntext = font.render(f"Score: {score}", True, (255, 255, 255))\nscreen.blit(text, (10, 10))'}
+  ],
+  example:{q:'写一个最简游戏循环的骨架：处理退出事件、刷新画面、控制帧率', code:'import pygame\npygame.init()\nscreen = pygame.display.set_mode((800, 600))\nclock = pygame.time.Clock()\n\nrunning = True\nwhile running:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            running = False\n    pygame.display.flip()\n    clock.tick(60)\npygame.quit()', s:'这是 Pygame 的「最小可用循环」：running 标志控制主循环，事件循环捕获 QUIT 退出，flip 刷新画面，tick(60) 锁帧率。所有游戏都是从这个骨架长出来的——加飞船、加子弹、加外星人，都是在这个 while 里添砖加瓦。先在本地环境跑通这个骨架，再逐层加内容。'},
+  traps:[
+    '忘了 pygame.display.flip()：画面永远不会更新，全黑屏。',
+    '事件循环里写死循环或 sleep：游戏卡死，事件堆积。',
+    '没做 pygame.quit()：关闭窗口后程序还在后台跑。',
+    '直接改 rect.x 整数：移动会一抖一抖，用浮点存再转 int。',
+    '碰撞检测方向写反：groupcollide 的第一个参数是子弹组。',
+    '帧率不锁：游戏在快电脑上快得没法玩，一定用 clock.tick()。'
+  ],
+  quiz:[
+    {type:'choice', q:'Pygame 游戏主循环每圈的核心三步是？', options:['处理事件-更新状态-绘制画面','读取-写入-关闭','初始化-加载-退出','移动-跳跃-射击'], answer:0, explain:'事件处理响应用户输入，更新让状态前进，绘制把新状态画出来，三步缺一不可。'},
+    {type:'choice', q:'把图像画到屏幕上用的是？', options:['screen.blit(图像, 位置)','screen.draw(图像)','screen.paint(图像)','screen.show(图像)'], answer:0, explain:'blit 是「块传输」，把图像贴到屏幕指定位置。'},
+    {type:'code', q:'写一个 Alien 类：有 x 属性，update 方法让 x 每帧加 1（面向对象模拟，纯 Python 可运行）', code:'class Alien:\n    def __init__(self):\n        self.x = 0\n    def update(self):\n        self.x += 1\n\nalien = Alien()\nalien.update()\nprint(alien.x)', expect:'1', hint:'__init__ 初始化 x，update 里 self.x += 1。'},
+    {type:'choice', q:'检测子弹和外星人碰撞常用？', options:['pygame.sprite.groupcollide','pygame.collision.check','pygame.overlap.detect','pygame.hit.test'], answer:0, explain:'groupcollide 对两个精灵组做碰撞检测，还可以自动删除撞上的对象。'},
+    {type:'code', q:'用 random 模块生成一个 1 到 1200 的随机整数（外星人的 x 坐标）', code:'import random\nx = random.randint(1, 1200)\nprint(x)', expect:'', hint:'random.randint(1, 1200)，输出是随机的，判题只检查无报错。'},
+    {type:'choice', q:'控制帧率的代码是？', options:['clock.tick(60)','screen.fps(60)','time.limit(60)','pygame.fps(60)'], answer:0, explain:'clock.tick(60) 让循环每秒最多跑 60 次，游戏速度稳定。'}
+  ],
+  dialogue:{q:'为什么游戏主循环要把「处理事件、更新状态、绘制画面」严格分开成三步？',
+    keys:['顺序','稳定','事件','更新','绘制','分离','节奏','不卡'],
+    model:'因为游戏是「每帧都要完整走一遍」的：不管玩家按没按键，画面都要刷新。如果把事件处理、状态更新、绘制混在一起，就会出现在一个循环里既要读输入又要画图，逻辑乱、帧率也不稳定。分开三步，每帧的节奏恒定：先听指令、再算变化、最后呈现。这也是程序设计的通用原则：职责分离，每段代码只做一件事。'}
+  ,
+  exam:[
+    {type:'choice', q:'pygame.display.flip() 的作用是？', options:['刷新屏幕显示','关闭窗口','初始化模块','播放音效'], answer:0, explain:'flip 把缓冲区的内容显示到屏幕，每帧调用一次。'},
+    {type:'code', q:'模拟记分：初始 score = 0，每消灭一个外星人 +5 分，消灭 3 个后输出 score', code:'score = 0\nfor alien in range(3):\n    score += 5\nprint(score)', expect:'15', hint:'循环 3 次每次 +5。'},
+    {type:'choice', q:'pygame.QUIT 事件在什么情况下触发？', options:['玩家点窗口关闭按钮','游戏开始时','按任意键时','程序崩溃时'], answer:0, explain:'玩家关闭窗口时产生 QUIT 事件，游戏应捕获并退出循环。'}
+  ]
 },
 {
-  id:13, no:'ⅩⅢ', title:'项目二：数据可视化', weeks:'第 15-17 周', diff:'★★★★★', full:false,
+  id:13, no:'ⅩⅢ', title:'项目二：数据可视化', weeks:'第 15-17 周', diff:'★★★★★', full:true,
   story:{tutor:'汉斯·罗斯林（Hans Rosling, 1948–2017）', era:'瑞典 · 数据可视化大师 · TED 演讲者',
     fact:'罗斯林用动态气泡图让全世界看懂了几十年的全球健康数据，他的 TED 演讲被观看超过 5000 万次。他说：数据本身不会说话，是可视化让数据开口。这个项目教你用 Matplotlib 画折线图和随机游走，用 Plotly 模拟掷骰子，用 CSV/JSON 分析真实数据，用 API 抓取 GitHub 热门仓库。',
     quote:'「数据是新时代的石油，可视化是炼油厂。」'},
   motto:'「会看图的人，能看见数据里的故事。」',
   mottoWho:'拉里·佩奇 · 开讲词',
-  map:['安装 Matplotlib','折线图','随机游走','Plotly 掷骰子','CSV 格式','JSON 数据','API 请求','Hacker News']
+  map:['安装 Matplotlib','折线图','随机游走','Plotly 掷骰子','CSV 格式','JSON 数据','API 请求','Hacker News'],
+  sections:[
+    {t:'Matplotlib 入门：第一张图', p:'Matplotlib 是 Python 最经典的可视化库。三行出图：plt.plot(数据) 画折线、plt.scatter(数据) 画散点、plt.show() 显示。安装 pip install matplotlib。图形是「数据的翻译」：同样的数字，画成图一眼看懂趋势，这就是罗斯林说的「数据开口说话」。', code:'import matplotlib.pyplot as plt\n\nsquares = [1, 4, 9, 16, 25]\nplt.plot(squares)\nplt.title("平方数", fontsize=14)\nplt.xlabel("n", fontsize=12)\nplt.ylabel("n²", fontsize=12)\nplt.show()'},
+    {t:'折线图与散点图：表达趋势与分布', p:'折线图适合连续趋势（气温变化、股价），散点图适合看分布和相关性（身高体重）。两者都能定制：线条颜色和宽度、点的颜色和尺寸、坐标轴范围。plt.style 可以换主题风格（如 seaborn）。图的每个细节都是信息：颜色、标签、标题，都是给别人看的线索。', code:'import matplotlib.pyplot as plt\n\nx = [1, 2, 3, 4, 5]\ny = [1, 8, 27, 64, 125]\n\nplt.scatter(x, y, c="red", s=80)   # 散点，红色，点大小 80\nplt.title("立方数", fontsize=16)\nplt.tick_params(axis="both", labelsize=12)\nplt.show()'},
+    {t:'随机游走：用随机画一幅画', p:'随机游走：从原点出发，每次随机选一个方向走一步，走很多步画出来就是一幅抽象画。核心是 random 模块的随机决策。RandomWalk 类：存 x 和 y 两个列表，fill_walk 方法一步步走。这是「程序 + 随机」的第一次结合——你写的代码能产生你没想到的画面。', code:'import random\nfrom random import choice\n\nclass RandomWalk:\n    def __init__(self, num_points=5000):\n        self.num_points = num_points\n        self.x = [0]\n        self.y = [0]\n    def fill_walk(self):\n        while len(self.x) < self.num_points:\n            x_step = choice([-1, 1]) * choice([0, 1, 2])\n            y_step = choice([-1, 1]) * choice([0, 1, 2])\n            if x_step == 0 and y_step == 0:\n                continue\n            self.x.append(self.x[-1] + x_step)\n            self.y.append(self.y[-1] + y_step)\n\nrw = RandomWalk(100)\nrw.fill_walk()\nprint("走了", len(rw.x), "步")'},
+    {t:'Plotly 与掷骰子：交互式图表', p:'Plotly 生成交互式图表（可缩放、悬停显示数值），浏览器里直接用。模拟掷骰子：random.randint(1, 6) 掷一次，掷几千次统计每个点数出现的次数，画成直方图。你会看到：掷得越多，各点数出现次数越接近——这就是大数定律，概率论最直观的验证。', code:'from random import randint\n\nclass Die:\n    def __init__(self, num_sides=6):\n        self.num_sides = num_sides\n    def roll(self):\n        return randint(1, self.num_sides)\n\ndie = Die()\nresults = [die.roll() for _ in range(1000)]\n# 统计每个点数出现次数\nfrequencies = [results.count(v) for v in range(1, 7)]\nprint(frequencies)  # 例如 [168, 165, 172, 155, 177, 163]'},
+    {t:'CSV 数据：从真实世界读取', p:'CSV（逗号分隔值）是数据交换的通用格式。csv 模块逐行读：csv.reader() 返回行迭代器。真实数据通常有表头（第一行），用 next() 跳过。处理真实数据时：先看结构、再提取需要的列、最后可视化。全球气温、地震记录、股票数据都是 CSV——真实世界的数据，比课堂例题乱得多，但也真实得多。', code:'import csv\n\nwith open("data.csv") as f:\n    reader = csv.reader(f)\n    header = next(reader)      # 跳过表头\n    highs = []\n    for row in reader:\n        if row:                 # 跳过空行\n            highs.append(int(row[1]))  # 第二列是最高温\nprint(highs)'},
+    {t:'API：让程序联网取数', p:'API 是网站提供的取数接口：你用请求 URL 拿到数据（通常是 JSON），然后解析、可视化。requests.get(url) 请求，response.json() 解析。GitHub API 不需要登录就能拿到热门仓库数据：仓库名、星标数、描述。你学到的是「程序联网」——从此你的代码不再只是计算，还能连接整个世界。', code:'import requests\n\nurl = "https://api.github.com/search/repositories?q=language:python&sort=stars"\nr = requests.get(url)\nresponse_dict = r.json()\n\nprint("找到仓库数:", response_dict.get("total_count"))\nrepos = response_dict.get("items", [])[:3]\nfor repo in repos:\n    print(repo["name"], "★", repo["stargazers_count"])\n    print("  ", repo["description"])'}
+  ],
+  example:{q:'用列表推导式生成 1 到 10 的平方数列表，并计算总和', code:'squares = [n**2 for n in range(1, 11)]\nprint(squares)\nprint(sum(squares))', s:'一行推导式生成 [1, 4, 9, ..., 100]，sum 求和得 385。推导式是「生成列表」的极简语法：把 for 循环压缩进方括号里。可视化项目里到处用它：生成 x 轴数据、批量算 y 值。'},
+  traps:[
+    '忘了 plt.show()：图不出现在屏幕上。',
+    '画完图没保存：plt.savefig() 存文件，不然关掉就没了。',
+    '列表下标越界：CSV 行可能比预期短，读之前先 len 检查或 try。',
+    '把字符串当数字算：CSV 读出来全是字符串，int()/float() 转换。',
+    '随机游走死循环：x_step 和 y_step 都为 0 时要 continue，否则一直原地踏步。',
+    '中文乱码：Matplotlib 默认字体不含中文，图里中文显示为方块，用 plt.rcParams 配中文字体或先用英文。'
+  ],
+  quiz:[
+    {type:'choice', q:'Matplotlib 中绘制折线图的函数是？', options:['plt.plot()','plt.line()','plt.draw()','plt.chart()'], answer:0, explain:'plot 画折线，scatter 画散点，bar 画柱状。'},
+    {type:'code', q:'用 random.randint 模拟掷一次骰子（1 到 6），打印结果', code:'from random import randint\nprint(randint(1, 6))', expect:'', hint:'randint 包含两端，输出随机，判题只看是否无报错。'},
+    {type:'choice', q:'显示绘制好的图形用？', options:['plt.show()','plt.display()','plt.open()','plt.view()'], answer:0, explain:'show 把图形渲染到屏幕上。'},
+    {type:'code', q:'用列表推导式生成 1 到 5 的平方，打印列表', code:'squares = [n**2 for n in range(1, 6)]\nprint(squares)', expect:'[1, 4, 9, 16, 25]', hint:'推导式：[表达式 for 变量 in 序列]。'},
+    {type:'choice', q:'读取 CSV 文件用哪个模块？', options:['csv','table','data','excel'], answer:0, explain:'csv 模块处理逗号分隔值文件。'},
+    {type:'code', q:'计算列表 [3, 1, 4, 1, 5] 的平均值（用 sum 和 len）', code:'nums = [3, 1, 4, 1, 5]\nprint(sum(nums) / len(nums))', expect:'2.8', hint:'平均值 = 总和 ÷ 个数，sum 和 len。'}
+  ],
+  dialogue:{q:'为什么说「一图胜千言」对数据分析特别重要？',
+    keys:['趋势','直观','比较','发现','规律','异常','理解','传达'],
+    model:'数据是一堆数字，人脑不擅长处理数字，但极擅长看图。一万行数字里藏着「逐年上升」的趋势，肉眼根本看不出来；画成折线图，一眼的事。更重要的是发现异常：图上突兀的一个尖峰，就是数据里的「反常」，可能是错误也可能是重大发现。可视化不是把数据画漂亮，而是把数据变成人能理解的语言——这也是佩奇做 Google 的核心理念：把信息组织成人能用的形式。'}
+  ,
+  exam:[
+    {type:'choice', q:'散点图适合展示？', options:['两个变量的相关性分布','单一数值的变化趋势','分类对比','时间序列'], answer:0, explain:'散点图每个点是一对值，能看出相关性和分布形态。'},
+    {type:'code', q:'模拟掷两个骰子 10 次，输出每次的点数和（循环累加打印总和）', code:'from random import randint\ntotal = 0\nfor _ in range(10):\n    total += randint(1, 6) + randint(1, 6)\nprint(total)', expect:'', hint:'两个 randint 相加，循环 10 次累加，输出随机。'},
+    {type:'choice', q:'requests.get(url).json() 返回的是？', options:['解析后的 Python 数据（字典/列表）','网页的 HTML','JSON 字符串','图片'], answer:0, explain:'json() 方法把 API 返回的 JSON 文本解析成 Python 字典或列表。'}
+  ]
 },
 {
-  id:14, no:'ⅩⅣ', title:'项目三：Web 应用程序', weeks:'第 18-20 周', diff:'★★★★★', full:false,
+  id:14, no:'ⅩⅣ', title:'项目三：Web 应用程序', weeks:'第 18-20 周', diff:'★★★★★', full:true,
   story:{tutor:'蒂姆·伯纳斯-李（Tim Berners-Lee, 1955–）', era:'英国 · 万维网发明者',
     fact:'1991 年，伯纳斯-李在 CERN 发布了第一个网页，然后做了一件改变世界的事：<b>把万维网的专利无偿捐给全人类</b>。今天你要用 Django 做一个「学习笔记」网站：用户注册、登录、记录笔记、部署上线。做完的那一刻，你的作品就和第一个网页一样，全世界都能访问。',
     quote:'「万维网的价值在于连接，而不在于控制。」 蒂姆·伯纳斯-李'},
   motto:'「写完最后一个项目，你就不再是新手了。」',
   mottoWho:'拉里·佩奇 · 开讲词',
-  map:['Django 建项目','创建应用','模型与数据库','学习笔记主页','创建用户账户','用户数据','样式美化','部署上线']
+  map:['Django 建项目','创建应用','模型与数据库','学习笔记主页','创建用户账户','用户数据','样式美化','部署上线'],
+  sections:[
+    {t:'Django 是什么：网站的脚手架', p:'Django 是 Python 最流行的 Web 框架，帮你把网站的重复劳动（路由、数据库、表单、安全）全部封装好。核心思想 MTV：<b>Model</b>（数据模型）→ <b>Template</b>（页面模板）→ <b>View</b>（业务逻辑）。项目 vs 应用：一个项目是一个网站，包含多个应用（功能模块）。佩奇说「让复杂的事变简单」，Django 就是这句话的实践。', code:'# 安装与创建项目\n# pip install django\n# django-admin startproject learning_log\n# cd learning_log\n# python manage.py runserver  → 打开 http://127.0.0.1:8000'},
+    {t:'模型与数据库：数据的家', p:'模型（Model）是 Python 类，一个类对应数据库一张表。定义字段（字符、文本、日期、外键），然后迁移：makemigrations 生成迁移文件、migrate 应用到数据库。Django 自动帮你建表，不用写一行 SQL。外键（ForeignKey）表示「属于」：一条笔记属于一个主题。', code:'from django.db import models\n\nclass Topic(models.Model):\n    """用户要学习的主题"""\n    text = models.CharField(max_length=200)\n    date_added = models.DateTimeField(auto_now_add=True)\n\n    def __str__(self):\n        return self.text\n\nclass Entry(models.Model):\n    """主题下的具体笔记"""\n    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)\n    text = models.TextField()\n    date_added = models.DateTimeField(auto_now_add=True)\n\n    class Meta:\n        verbose_name_plural = "entries"'},
+    {t:'视图与模板：逻辑与页面分工', p:'视图（View）是 Python 函数：接收请求，从数据库取数据，交给模板渲染，返回响应。模板（Template）是 HTML 加模板语法：{{ 变量 }} 显示数据、{% for %} 循环、{% if %} 判断。逻辑和数据在 Python 里，页面长什么样在模板里，职责分开，改页面不用动逻辑。', code:'# views.py\nfrom django.shortcuts import render\nfrom .models import Topic\n\ndef topics(request):\n    """显示所有主题"""\n    topics = Topic.objects.order_by("date_added")\n    context = {"topics": topics}\n    return render(request, "topics.html", context)\n\n# topics.html 模板\n# {% for topic in topics %}\n#   <li>{{ topic.text }}</li>\n# {% empty %}\n#   <li>还没有主题</li>\n# {% endfor %}'},
+    {t:'URL 路由：网站的地址簿', p:'urls.py 把网址映射到视图：访问 /topics 就执行 topics 视图。路径用 path() 定义，可以带参数：path("topics/<int:topic_id>/", ...) 把 URL 里的数字传给视图。路由是网站的「地址簿」：每个地址指向一个功能。', code:'# urls.py（项目级）\nfrom django.contrib import admin\nfrom django.urls import path, include\n\nurlpatterns = [\n    path("admin/", admin.site.urls),\n    path("", include("learning_logs.urls")),\n]\n\n# learning_logs/urls.py（应用级）\napp_name = "learning_logs"\nurlpatterns = [\n    path("", views.index, name="index"),\n    path("topics/", views.topics, name="topics"),\n]'},
+    {t:'用户账户与安全：谁的笔记归谁', p:'用 Django 自带的用户系统做注册登录：UserCreationForm 注册、login/logout 视图。然后让数据「归人所有」：Topic 加 owner 外键指向用户，登录后才能看到自己的主题。权限控制是网站的底线：你能看到别人的笔记吗？不能——这就是后端最重要的职责之一。', code:'# 注册表单\nfrom django.contrib.auth.forms import UserCreationForm\nfrom django.shortcuts import render, redirect\n\ndef register(request):\n    if request.method != "POST":\n        form = UserCreationForm()\n    else:\n        form = UserCreationForm(data=request.POST)\n        if form.is_valid():\n            form.save()\n            return redirect("login")\n    context = {"form": form}\n    return render(request, "registration/register.html", context)'},
+    {t:'部署上线：作品走向世界', p:'开发完本地能跑，部署后全世界能访问。可选平台：PythonAnywhere（免费、教程配套）、Render、Vercel。部署流程：上传代码、配环境、迁移数据库、开 DEBUG=False、配静态文件。记住：<b>DEBUG 必须关</b>，否则出错会泄露代码细节。伯纳斯-李把万维网免费给了全人类，你的网站上线那一刻，也加入了这张网。', code:'# settings.py 部署前必改\nDEBUG = False\nALLOWED_HOSTS = ["your-app-name.onrender.com"]\n\n# 迁移数据库\n# python manage.py makemigrations\n# python manage.py migrate\n# 收集静态文件\n# python manage.py collectstatic'}
+  ],
+  example:{q:'模拟模板变量替换：写一个函数，输入名字列表，输出「你好，xxx！」的欢迎语列表（模拟模板渲染）', code:'def welcome(names):\n    return [f"你好，{name}！" for name in names]\n\nprint(welcome(["Alice", "Bob"]))', s:'列表推导式 + f-string，把每个名字渲染成一句欢迎语，就像模板引擎把 {{ 变量 }} 替换成真实值。输出 ["你好，Alice！", "你好，Bob！"]。'},
+  traps:[
+    '忘了迁移：改了 models.py 不 makemigrations/migrate，数据库没变化，查询报错。',
+    '新应用没加进 INSTALLED_APPS：模板和迁移都不生效。',
+    '模板路径不对：Django 找不到 html 文件。',
+    'DEBUG 上线不关：出错页面泄露代码和路径，安全漏洞。',
+    '外键没设 on_delete：删父记录时行为不明确，报错或数据残留。',
+    '注册了用户没处理登录后跳转：LOGIN_REDIRECT_URL 没配，登录后 404。'
+  ],
+  quiz:[
+    {type:'choice', q:'创建 Django 项目的命令是？', options:['django-admin startproject 项目名','django new 项目名','python create 项目名','django start 项目名'], answer:0, explain:'startproject 创建项目骨架，startapp 创建应用。'},
+    {type:'choice', q:'数据模型定义在哪个文件？', options:['models.py','views.py','urls.py','settings.py'], answer:0, explain:'models.py 里定义类，一个类一张表。'},
+    {type:'code', q:'模拟视图返回：写函数 make_response(title, items) 返回一个字典 {title: items}，调用并打印', code:'def make_response(title, items):\n    return {title: items}\n\nresp = make_response("topics", ["Python", "Django"])\nprint(resp)', expect:'{"topics": ["Python", "Django"]}', hint:'函数返回字典，调用时传两个实参。'},
+    {type:'choice', q:'数据库迁移要依次执行哪两条命令？', options:['makemigrations 再 migrate','migrate 再 makemigrations','startproject 再 runserver','collectstatic 再 migrate'], answer:0, explain:'先 makemigrations 生成迁移文件，再 migrate 应用到数据库。'},
+    {type:'code', q:'模拟模板循环：用 f-string 生成列表 ["Item 1", "Item 2", "Item 3"]', code:'items = [f"Item {i}" for i in range(1, 4)]\nprint(items)', expect:'["Item 1", "Item 2", "Item 3"]', hint:'f-string 里放循环变量。'},
+    {type:'choice', q:'启动 Django 开发服务器的命令？', options:['python manage.py runserver','python server.py','django run','manage.py start'], answer:0, explain:'runserver 启动本地开发服务器，默认 8000 端口。'}
+  ],
+  dialogue:{q:'「前端后端分离」是什么意思？为什么现代网站都这么做？',
+    keys:['前端','展示','后端','数据','逻辑','接口','分工','独立'],
+    model:'前端是用户看到和操作的部分（页面样式、交互），后端是服务器上处理数据和逻辑的部分（存取数据库、权限、计算）。分离就是：后端只提供数据接口（API），前端只负责展示和交互。好处：分工清晰、各自独立升级、同一套后端可以同时服务网页和手机 App。Django 的传统模式（模板渲染）是前后端一体，API 模式是分离——先学一体的好入门，理解分离是方向。'}
+  ,
+  exam:[
+    {type:'choice', q:'Django 中「一个类对应数据库一张表」的概念是？', options:['模型 Model','视图 View','模板 Template','路由 URL'], answer:0, explain:'Model 定义数据结构，Django 自动建表。'},
+    {type:'code', q:'模拟用户数据归属：写函数 is_owner(user, owner) 返回用户是否是该数据的拥有者，输出结果', code:'def is_owner(user, owner):\n    return user == owner\n\nprint(is_owner("alice", "alice"))\nprint(is_owner("bob", "alice"))', expect:'True\nFalse', hint:'== 比较两个字符串。'},
+    {type:'choice', q:'部署网站前必须把 DEBUG 设置成？', options:['False','True','None','0'], answer:0, explain:'DEBUG=False 后出错不泄露内部信息，是上线安全底线。'}
+  ]
 }
 ];
 
