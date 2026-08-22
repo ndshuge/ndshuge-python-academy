@@ -18,21 +18,24 @@ if not exist .git (git init >nul 2>&1)
 git branch -M main 2>nul
 echo [1/3] 提交本地改动...
 git add .
-git -c user.name=ndshuge -c user.email=ndshuge@gmail.com commit -m "update" >nul 2>&1
-echo [2/3] 设置远程并推送...
+git -c user.name=ndshuge-cloud -c user.email=ndshuge@gmail.com commit -m "update" >nul 2>&1
+echo [Python] 推送...
 git remote remove origin 2>nul
 git remote add origin "https://ndshuge:%TOKEN%@github.com/ndshuge/ndshuge-python-academy.git" >nul 2>&1
 git remote set-url origin "https://ndshuge:%TOKEN%@github.com/ndshuge/ndshuge-python-academy.git" >nul 2>&1
-git push -u origin main 2>err.txt
-if errorlevel 1 (
+git push -u origin main 2>err1.txt
+set RES=%errorlevel%
+if not "%RES%"=="0" (
   echo   推送被拒，强制覆盖中...
-  git push -f -u origin main 2>err.txt
+  git push -f -u origin main 2>err1.txt
+  set RES=%errorlevel%
 )
 git remote set-url origin "https://github.com/ndshuge/ndshuge-python-academy.git" >nul 2>&1
-del err.txt >nul 2>&1
+if "%RES%"=="0" ( echo   Python推送成功 ) else ( echo   Python推送失败 & type err1.txt )
+
+del err1.txt >nul 2>&1
 echo.
 echo ==========================================
-echo   [3/3] 完成！
-echo   网页: https://ndshuge.github.io/ndshuge-python-academy/
+echo   Python:  https://ndshuge.github.io/ndshuge-python-academy/
 echo ==========================================
 pause
