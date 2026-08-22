@@ -234,6 +234,8 @@ body{
 .share-copy{border:1px solid rgba(59,110,165,.4); background:#fff; color:#2C5480; border-radius:8px; padding:7px 14px; font-family:inherit; font-size:12px; font-weight:600; cursor:pointer; flex:none; transition:.15s}
 .share-copy:hover{background:rgba(59,110,165,.1)}
 .share-copy.done{background:#e8f8ee; border-color:rgba(52,199,89,.5); color:#1d7a3f}
+.share-open{border:1px solid rgba(52,199,89,.45); background:#fff; color:#1d7a3f; border-radius:8px; padding:7px 12px; font-family:inherit; font-size:12px; font-weight:600; cursor:pointer; flex:none; text-decoration:none; transition:.15s; text-align:center}
+.share-open:hover{background:rgba(52,199,89,.12)}
 .share-tip{font-size:11px; color:#9a9288; text-align:center; line-height:1.6}
 
 /* ===== 主区域 ===== */
@@ -2736,13 +2738,13 @@ if(!pyLoading) ensurePy();
       <div class="share-intro">把学院分享给同学，一起学 🐭🐿️</div>
       <div class="share-item">
         <div class="share-name">🐍 Python 学院</div>
-        <div class="share-row"><span class="share-label">📖 学习链接</span><input class="share-inp" readonly value="https://ndshuge.github.io/ndshuge-python-academy/" onclick="this.select()"><button class="share-copy" onclick="copyShare(this)">复制</button></div>
-        <div class="share-row"><span class="share-label">📦 仓库</span><input class="share-inp" readonly value="https://github.com/ndshuge/ndshuge-python-academy" onclick="this.select()"><button class="share-copy" onclick="copyShare(this)">复制</button></div>
+        <div class="share-row"><span class="share-label">📖 学习链接</span><input class="share-inp" readonly value="https://ndshuge.github.io/ndshuge-python-academy/" onclick="this.select()"><button class="share-copy" onclick="copyShare(this)">复制</button><a class="share-open" href="https://ndshuge.github.io/ndshuge-python-academy/" target="_blank" rel="noopener">打开 ↗</a></div>
+        <div class="share-row"><span class="share-label">📦 仓库</span><input class="share-inp" readonly value="https://github.com/ndshuge/ndshuge-python-academy" onclick="this.select()"><button class="share-copy" onclick="copyShare(this)">复制</button><a class="share-open" href="https://github.com/ndshuge/ndshuge-python-academy" target="_blank" rel="noopener">打开 ↗</a></div>
       </div>
       <div class="share-item">
         <div class="share-name">🧮 微积分学院</div>
-        <div class="share-row"><span class="share-label">📖 学习链接</span><input class="share-inp" readonly value="https://ndshuge.github.io/ndshuge-calculus-academy/" onclick="this.select()"><button class="share-copy" onclick="copyShare(this)">复制</button></div>
-        <div class="share-row"><span class="share-label">📦 仓库</span><input class="share-inp" readonly value="https://github.com/ndshuge/ndshuge-calculus-academy" onclick="this.select()"><button class="share-copy" onclick="copyShare(this)">复制</button></div>
+        <div class="share-row"><span class="share-label">📖 学习链接</span><input class="share-inp" readonly value="https://ndshuge.github.io/ndshuge-calculus-academy/" onclick="this.select()"><button class="share-copy" onclick="copyShare(this)">复制</button><a class="share-open" href="https://ndshuge.github.io/ndshuge-calculus-academy/" target="_blank" rel="noopener">打开 ↗</a></div>
+        <div class="share-row"><span class="share-label">📦 仓库</span><input class="share-inp" readonly value="https://github.com/ndshuge/ndshuge-calculus-academy" onclick="this.select()"><button class="share-copy" onclick="copyShare(this)">复制</button><a class="share-open" href="https://github.com/ndshuge/ndshuge-calculus-academy" target="_blank" rel="noopener">打开 ↗</a></div>
       </div>
       <div class="share-tip">两个学院账号互通：注册一个账号，两个学院都能用，进度各自独立。</div>
     </div>
