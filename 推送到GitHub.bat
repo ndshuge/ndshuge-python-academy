@@ -19,10 +19,10 @@ git branch -M main 2>nul
 echo [1/3] 提交本地改动...
 git add .
 git -c user.name=ndshuge-cloud -c user.email=ndshuge@gmail.com commit -m "update" >nul 2>&1
-echo [%(l)s] 推送...
+echo [Python] 推送...
 git remote remove origin 2>nul
-git remote add origin "%(u)s" >nul 2>&1
-git remote set-url origin "%(u)s" >nul 2>&1
+git remote add origin "https://ndshuge:%TOKEN%@github.com/ndshuge/ndshuge-python-academy.git" >nul 2>&1
+git remote set-url origin "https://ndshuge:%TOKEN%@github.com/ndshuge/ndshuge-python-academy.git" >nul 2>&1
 
 set HTTPS_PROXY=
 set HTTP_PROXY=

@@ -1,1 +1,0 @@
-fatal: unable to access 'https://github.com/ndshuge/ndshuge-python-academy.git/': schannel: failed to receive handshake, SSL/TLS connection failed
