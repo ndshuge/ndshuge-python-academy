@@ -30,16 +30,16 @@ echo [2/3] 设置远程并推送...
 git remote remove origin 2>nul
 git remote add origin "https://ndshuge-cloud:%TOKEN%@github.com/ndshuge-cloud/larry-page-python-academy.git" >nul 2>&1
 git remote set-url origin "https://ndshuge-cloud:%TOKEN%@github.com/ndshuge-cloud/larry-page-python-academy.git" >nul 2>&1
-git push -u origin main 2>push_err.txt
-set ERR=%errorlevel%
 
-rem 如果推送被拒（本地与远程历史不同步），本地为最新权威，强制覆盖
-findstr /i "rejected fetch first" push_err.txt >nul 2>&1
-if %errorlevel%==0 (
-  echo 检测到远程与本地不同步，本地为最新版，强制覆盖推送...
-  git push -f -u origin main 2>push_err.txt
-  set ERR=%errorlevel%
-)
+git push -u origin main 2>push_err.txt
+if %errorlevel%==0 goto pushed
+
+rem 推送被拒（本地与远程不同步等）：本地为最新权威，直接强制覆盖
+echo   推送被拒，本地为最新版，强制覆盖中...
+git push -f -u origin main 2>push_err.txt
+
+:pushed
+set ERR=%errorlevel%
 
 rem 还原 remote，不留令牌痕迹
 git remote set-url origin "%REPO%" >nul 2>&1

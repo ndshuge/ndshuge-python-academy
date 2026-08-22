@@ -114,6 +114,35 @@ body{
 .clear-actions button:hover{background:var(--blue-bg); color:var(--blue)}
 .clear-actions button.danger{border-color:rgba(139,44,31,.4); color:#8B2C1F; font-weight:600}
 .clear-actions button.danger:hover{background:rgba(139,44,31,.08)}
+.modal-sep{font-size:11px; letter-spacing:1px; color:#8a6d1f; margin:8px 0 2px; font-weight:600; border-top:1px dashed rgba(184,134,11,.3); padding-top:10px}
+.sb-status{font-size:11px; color:var(--muted); border:1px dashed rgba(83,125,150,.4); border-radius:980px; padding:8px 12px; cursor:pointer; text-align:center; transition:.15s; background:rgba(83,125,150,.05)}
+.sb-status:hover{background:rgba(83,125,150,.12); color:var(--blue); border-style:solid}
+.sb-status.ok{color:#3a6b47; border-color:rgba(58,107,71,.35); background:rgba(58,107,71,.06)}
+.sb-status.ok:hover{background:rgba(58,107,71,.12)}
+.sb-panel{display:flex; flex-direction:column; gap:8px}
+.sb-user{font-size:12.5px; color:var(--ink2); line-height:1.7; background:rgba(58,107,71,.06); border:1px solid rgba(58,107,71,.2); border-radius:10px; padding:10px 12px}
+.sb-user b{color:#3a6b47}
+.sb-input{width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:8px; font-family:inherit; font-size:13px; background:#fff; outline:none; box-sizing:border-box}
+.sb-input:focus{border-color:var(--blue)}
+.sb-actions{display:flex; gap:8px}
+.sb-btn{border:1px solid var(--line); background:#fff; border-radius:8px; padding:8px 16px; font-family:inherit; font-size:12.5px; cursor:pointer; color:var(--ink2); transition:.15s; flex:1}
+.sb-btn:hover{background:var(--blue-bg); color:var(--blue)}
+.sb-btn.primary{border-color:var(--blue); color:var(--blue); font-weight:600}
+.sb-btn.primary:hover{background:var(--blue-bg)}
+.sb-tip{font-size:10.5px; color:#9a9288; line-height:1.6}
+.sb-msg{font-size:12px; min-height:18px; margin-top:2px}
+.login-overlay{position:fixed; inset:0; z-index:999; background:linear-gradient(160deg,#eef3f8,#e6ecf3); display:flex; align-items:center; justify-content:center}
+.login-card{background:var(--card); border:1px solid var(--line); border-radius:20px; width:min(380px, 92vw); padding:32px 30px; display:flex; flex-direction:column; gap:12px; box-shadow:0 20px 60px rgba(80,70,50,.2); text-align:center}
+.login-logo{width:64px; height:64px; border-radius:50%; margin:0 auto; background:linear-gradient(135deg,#537D96,#3F6179); display:flex; align-items:center; justify-content:center; font-size:30px; box-shadow:0 6px 18px rgba(83,125,150,.35)}
+.login-title{font-size:20px; font-weight:700; font-family:Georgia,'Songti SC',serif; color:var(--ink)}
+.login-sub{font-size:12.5px; color:var(--muted); margin-bottom:6px}
+.login-actions{display:flex; gap:10px; margin-top:4px}
+.login-btn{flex:1; border:none; border-radius:10px; padding:11px; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; transition:.15s; background:var(--blue-bg); color:var(--blue); border:1px solid rgba(83,125,150,.3)}
+.login-btn:hover{background:rgba(83,125,150,.15)}
+.login-btn.primary{background:linear-gradient(135deg,#537D96,#3F6179); color:#fff; border:none}
+.login-btn.primary:hover{filter:brightness(1.08)}
+.login-msg{font-size:12px; min-height:18px; color:#8B2C1F}
+.login-tip{font-size:11px; color:#9a9288; line-height:1.7; background:rgba(43,37,29,.04); border-radius:8px; padding:9px 11px}
 
 /* ===== 主区域 ===== */
 #main{flex:1;min-width:0;padding:36px 44px 80px;max-width:980px;margin:0 auto}
@@ -383,6 +412,7 @@ pre.code .lang{position:absolute;top:8px;right:12px;font-size:10px;color:#777;le
       <div id="statsGrid"></div>
     </div>
     <div id="quote">「代码是思维的乐高：复杂的世界，由简单的积木拼成。」—— 拉里·佩奇</div>
+    <div id="sbStatus" class="sb-status" onclick="openManageModal()">☁️ 云同步 · 未登录</div>
   </aside>
 
   <main id="main">
@@ -1188,6 +1218,7 @@ function renderProgress(){
     return '<div class="subrow" title="'+x.tip+'"><span class="st">'+x.t+'</span><div class="sbar"><i style="width:'+p+'%"></i></div><span class="sv">'+txt+'</span></div>';
   }).join('');
   renderStats();
+  sbNotify();
 }
 function renderStats(){
   var t = totalDone(), all = PLAN.reduce(function(a,w){return a+w.lessons.length},0);
@@ -1815,9 +1846,173 @@ function openManageModal(){
   $('#modalStats').innerHTML = [
     ['课时', t+'/'+all], ['徽章', got+'/'+BADGES.length], ['错题', wrongPool.length], ['已订正', fixedPool.length], ['足迹', studyLog.length], ['周测', Object.keys(hallDone).length]
   ].map(function(x){return '<div class="mstat"><div class="mv">'+x[1]+'</div><div class="ml">'+x[0]+'</div></div>'}).join('');
+  sbRefresh();
   document.getElementById('progressModal').style.display='flex';
 }
 function closeManageModal(){ document.getElementById('progressModal').style.display='none'; }
+
+/* ================= 云同步（Supabase，多设备进度对齐）================= */
+var SB_URL = 'https://yycokuphczoxfntcwizi.supabase.co';
+var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5Y29rdXBoY3pveGZudGN3aXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MDM3MzgsImV4cCI6MjEwMjk3OTczOH0.1vm61oyqeBmc2lL_q0-rgJT2x6TsOn_DXsQo1GQJbSM';
+function sbSession(){ return load('sb_session', null); }
+function sbAuthHeaders(){
+  var s = sbSession();
+  return s ? { 'Authorization': 'Bearer ' + s.access_token, 'Content-Type': 'application/json', 'apikey': SB_KEY } : null;
+}
+async function sbEnsureToken(){
+  var s = sbSession();
+  if(!s) return false;
+  var live = true;
+  try{
+    var payload = JSON.parse(atob(s.access_token.split('.')[1]));
+    live = Date.now() < (payload.exp * 1000) - 60000;
+  }catch(e){ live = false; }
+  if(live) return true;
+  if(!s.refresh_token) return false;
+  try{
+    var r = await fetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({refresh_token: s.refresh_token}) });
+    var j = await r.json();
+    if(j.access_token){ store('sb_session', {access_token: j.access_token, refresh_token: j.refresh_token || s.refresh_token, user: j.user || s.user}); return true; }
+  }catch(e){}
+  return false;
+}
+function sbMsg(t, ok){
+  var m = document.getElementById('sbMsg');
+  if(m){ m.textContent = t; m.style.color = ok ? '#3a6b47' : '#8B2C1F'; }
+}
+function sbPack(){
+  return {
+    lessons: load('lessons', []), ch: load('ch', []), hall: load('hall', {}),
+    qstat: load('qstat', {}), wrong: load('wrong', []), fixed: load('fixed', []), log: load('log', [])
+  };
+}
+function showLogin(){
+  var el = document.getElementById('loginOverlay');
+  if(el) el.style.display = 'flex';
+}
+function hideLogin(){
+  var el = document.getElementById('loginOverlay');
+  if(el) el.style.display = 'none';
+}
+function loginDo(){ sbAuth(false); }
+function signupDo(){ sbAuth(true); }
+async function sbAuth(doSignup){
+  var email = $('#loginEmail').value.trim(), pass = $('#loginPass').value;
+  var msg = document.getElementById('loginMsg');
+  if(!email || !/\S+@\S+\.\S+/.test(email)){ msg.textContent = '请输入有效的邮箱'; return; }
+  if(pass.length < 6){ msg.textContent = '密码至少 6 位'; return; }
+  msg.textContent = doSignup ? '注册中…' : '登录中…';
+  try{
+    var url = doSignup ? (SB_URL + '/auth/v1/signup') : (SB_URL + '/auth/v1/token?grant_type=password');
+    var body = { email: email, password: pass };
+    var r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    var j = await r.json();
+    if(j.access_token){
+      store('sb_session', {access_token: j.access_token, refresh_token: j.refresh_token, user: j.user});
+      msg.textContent = '';
+      hideLogin();
+      sbRefresh();
+      if(doSignup){ sbMsg('注册成功，已自动登录', true); await sbPush(true); }
+      else { sbMsg('登录成功，正在同步进度…', true); await sbSyncFromCloud(); }
+    } else {
+      msg.textContent = j.msg || j.error_description || (doSignup ? '注册失败（邮箱可能已存在）' : '登录失败（邮箱或密码不对）');
+    }
+  }catch(e){ msg.textContent = '网络错误：' + e.message; }
+}
+function sbLogout(){
+  localStorage.removeItem('pyc_sb_session');
+  sbRefresh();
+  sbMsg('已退出登录');
+  showLogin();
+}
+async function sbSyncFromCloud(){
+  if(!(await sbEnsureToken())){ sbMsg('登录已失效，请重新登录'); return; }
+  var h = sbAuthHeaders(); var s = sbSession();
+  if(!h || !s){ sbMsg('请先登录'); return; }
+  sbMsg('正在从云端同步…');
+  try{
+    var r = await fetch(SB_URL + '/rest/v1/progress?select=data&user_id=eq.' + s.user.id, { headers:h });
+    var rows = await r.json();
+    if(rows && rows.length && rows[0].data){
+      var d = rows[0].data;
+      ['lessons','ch','hall','qstat','wrong','fixed','log'].forEach(function(k){
+        if(d[k] !== undefined) store(k, d[k]);
+      });
+      sbMsg('已从云端同步最新进度', true);
+      renderProgress();
+    } else {
+      await sbPush(true);
+      sbMsg('已把本地进度上传云端', true);
+    }
+  }catch(e){ sbMsg('同步失败：' + e.message); }
+}
+var sbTimer = null;
+async function sbPush(immediate){
+  var s = sbSession();
+  if(!s) return;
+  if(!immediate){
+    clearTimeout(sbTimer);
+    sbTimer = setTimeout(function(){ sbPush(true); }, 2000);
+    return;
+  }
+  if(!(await sbEnsureToken())) return;
+  try{
+    var h = sbAuthHeaders();
+    var data = sbPack();
+    var body = { data: data, updated_at: new Date().toISOString() };
+    var r = await fetch(SB_URL + '/rest/v1/progress?user_id=eq.' + s.user.id, { method:'GET', headers:h });
+    var rows = await r.json();
+    if(rows && rows.length){
+      await fetch(SB_URL + '/rest/v1/progress?user_id=eq.' + s.user.id, { method:'PATCH', headers:h, body: JSON.stringify(body) });
+    } else {
+      body.user_id = s.user.id;
+      await fetch(SB_URL + '/rest/v1/progress', { method:'POST', headers:h, body: JSON.stringify(body) });
+    }
+  }catch(e){}
+}
+function sbNotify(){ if(sbSession()) sbPush(false); }
+function sbRefresh(){
+  var box = document.getElementById('sbPanel');
+  var s = sbSession();
+  var status = document.getElementById('sbStatus');
+  if(status){
+    if(s){
+      status.className = 'sb-status ok';
+      status.textContent = '☁️ 已同步：' + (s.user && s.user.email ? s.user.email.split('@')[0] : '已登录');
+    } else {
+      status.className = 'sb-status';
+      status.textContent = '☁️ 登录后可多设备同步进度';
+    }
+  }
+  if(!box) return;
+  if(s){
+    box.innerHTML = '<div class="sb-user">✅ 已登录：<b>' + esc(s.user.email) + '</b></div><div class="sb-actions"><button class="sb-btn primary" onclick="sbSyncFromCloud()">🔄 立即同步</button><button class="sb-btn" onclick="sbLogout()">退出登录</button></div><div class="sb-tip">学习进度会自动同步到云端，换设备登录即恢复。首次登录后自动保持，无需重复登录。</div>';
+  } else {
+    box.innerHTML = '<div class="sb-tip">未登录。登录入口在启动时已弹出；也可点上方「退出登录」重新登录。</div>';
+  }
+  var msg = document.getElementById('sbMsg'); if(msg) msg.textContent = '';
+}
+/* 启动时静默同步 */
+function sbInit(){
+  var s = sbSession();
+  sbRefresh();
+  if(!s){ showLogin(); return; }
+  sbEnsureToken().then(function(ok){
+    if(!ok){ sbLogout(); showLogin(); return; }
+    hideLogin();
+    fetch(SB_URL + '/rest/v1/progress?select=data&user_id=eq.' + sbSession().user.id, { headers: sbAuthHeaders() })
+      .then(function(r){ return r.json(); })
+      .then(function(rows){
+        if(rows && rows.length && rows[0].data){
+          var d = rows[0].data;
+          ['lessons','ch','hall','qstat','wrong','fixed','log'].forEach(function(k){
+            if(d[k] !== undefined) store(k, d[k]);
+          });
+          renderProgress();
+        }
+      }).catch(function(){});
+  });
+}
 
 /* ================= 启动 ================= */
 renderNav();
@@ -1825,9 +2020,26 @@ go('home');
 renderProgress();
 renderPlan();
 renderHome();
+sbInit();
 /* 预加载 Python 运行时（后台静默加载） */
 if(!pyLoading) ensurePy();
 </script>
+<!-- 强制登录层 -->
+<div id="loginOverlay" class="login-overlay" style="display:none">
+  <div class="login-card">
+    <div class="login-logo">🐍</div>
+    <div class="login-title">拉里·佩奇的 Python 学院</div>
+    <div class="login-sub">登录后开始学习 · 进度多设备自动同步</div>
+    <input id="loginEmail" class="sb-input" type="email" placeholder="邮箱" onkeydown="if(event.key==='Enter') loginDo()">
+    <input id="loginPass" class="sb-input" type="password" placeholder="密码（至少 6 位）" onkeydown="if(event.key==='Enter') loginDo()">
+    <div class="login-actions">
+      <button class="login-btn primary" onclick="loginDo()">登 录</button>
+      <button class="login-btn" onclick="signupDo()">注 册</button>
+    </div>
+    <div id="loginMsg" class="login-msg"></div>
+    <div class="login-tip">第一次用点「注册」，之后自动登录。同一账号，手机电脑进度同步。</div>
+  </div>
+</div>
 <div class="modal-mask" id="progressModal" style="display:none" onclick="closeManageModal()">
   <div class="modal-card" onclick="event.stopPropagation()">
     <div class="modal-head">📁 管理进度<button class="modal-x" onclick="closeManageModal()">✕</button></div>
@@ -1846,6 +2058,9 @@ if(!pyLoading) ensurePy();
         </div>
       </div>
       <div class="modal-tip">学习数据保存在本机浏览器（localStorage）中。换设备或清理浏览器前记得先导出；导入会覆盖当前进度。</div>
+      <div class="modal-sep">☁️ 云同步（多设备进度对齐）</div>
+      <div id="sbPanel" class="sb-panel"></div>
+      <div id="sbMsg" class="sb-msg"></div>
     </div>
   </div>
 </div>
