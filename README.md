@@ -6,9 +6,11 @@
 
 ## 🚀 使用链接
 
-👉 **https://ndshuge.github.io/ndshuge-python-academy/**
+👉 **https://ndshuge.github.io/ndshuge-python-academy/?v=3**
 
 手机、电脑、平板直接打开就能用。注册一个账号，进度自动云端同步，换设备接着学。
+
+> 💡 若打开后界面不是最新版（浏览器缓存了旧页面），在网址末尾加 `?v=3`（版本号会随更新递增）即可强制加载新版；或分享板块复制链接（自动带版本号）。
 
 ## ✨ 功能
 
