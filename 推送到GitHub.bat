@@ -1,44 +1,60 @@
 @echo off
-chcp 65001 >nul
-cd /d "%~dp0"
+title À­ÀïÅåÆæ Python Ñ§Ôº - ÍÆËÍµ½ GitHub
 echo ==========================================
-echo   æ‹‰é‡ŒÂ·ä½©å¥‡ Python å­¦é™¢ Â· æ¨é€åˆ° GitHub
+echo   À­ÀïÅåÆæ Python Ñ§Ôº ¡¤ Ò»¼üÍÆËÍ
 echo ==========================================
 echo.
 
-rem æ£€æŸ¥ä»“åº“çŠ¶æ€
 if not exist .git (
-  echo åˆå§‹åŒ–ä»“åº“...
-  git init >nul
+  echo [1/4] ³õÊ¼»¯±¾µØ²Ö¿â...
+  git init >nul 2>&1
+  git branch -M main 2>nul
 )
 
-rem ç¡®ä¿ main åˆ†æ”¯
 git branch -M main 2>nul
-
-rem è®¾ç½®è¿œç¨‹
 git remote remove origin 2>nul
 git remote add origin https://github.com/ndshuge-cloud/larry-page-python-academy.git
-
-rem æäº¤å½“å‰æ”¹åŠ¨
 git add .
-git commit -m "æ›´æ–°å­¦é™¢å†…å®¹" 2>nul
+git commit -m "¸üĞÂÑ§ÔºÄÚÈİ" >nul 2>&1
 
-echo æ­£åœ¨æ¨é€åˆ° GitHub...
-git push -u origin main
+echo [2/4] ÕıÔÚÍÆËÍµ½ GitHub...
+echo.
 
-if %errorlevel%==0 (
-  echo.
-  echo âœ… æ¨é€æˆåŠŸï¼
-  echo    ä»“åº“åœ°å€ï¼šhttps://github.com/ndshuge-cloud/larry-page-python-academy
-  echo    ç½‘é¡µåœ°å€ï¼ˆGitHub Pagesï¼Œéœ€åœ¨ä»“åº“ Settings - Pages å¼€å¯ï¼‰ï¼š
-  echo    https://ndshuge-cloud.github.io/larry-page-python-academy/
-) else (
-  echo.
-  echo âŒ æ¨é€å¤±è´¥ã€‚å¸¸è§åŸå› ä¸è§£å†³ï¼š
-  echo    1. è¿œç¨‹ä»“åº“ä¸å­˜åœ¨ â†’ å…ˆåˆ° https://github.com/new åˆ›å»ºç©ºä»“åº“ï¼Œ
-  echo       åç§°å¡« larry-page-python-academyï¼Œåˆ›å»ºåé‡æ–°è¿è¡Œæœ¬è„šæœ¬
-  echo    2. æœªç™»å½• â†’ é¦–æ¬¡æ¨é€ä¼šå¼¹å‡º GitHub ç™»å½•çª—å£ï¼Œç™»å½•å³å¯
-  echo    3. ç½‘ç»œé—®é¢˜ â†’ æ£€æŸ¥ç½‘ç»œåé‡è¯•
-)
+:push
+git push -u origin main 2>push_err.txt
+set ERR=%errorlevel%
+
+findstr /i "repository not found" push_err.txt >nul 2>&1
+if %errorlevel%==0 goto norepo
+
+if %ERR%==0 goto ok
+
+echo [3/4] ÍÆËÍ³ö´í£¬ĞÅÏ¢ÈçÏÂ£º
+type push_err.txt
+echo.
+echo Çë°ÑÉÏÃæµÄÎÄ×Ö·¢¸øÖúÊÖ£¬»ò¼ì²éÍøÂçºó°´ÈÎÒâ¼üÖØÊÔ¡£
+pause >nul
+goto push
+
+:norepo
+echo [3/4] Ô¶³Ì²Ö¿â»¹²»´æÔÚ£¬ÕıÔÚÎªÄã´ò¿ª´´½¨Ò³Ãæ...
+start https://github.com/new
+echo.
+echo   ÔÚ´ò¿ªµÄÒ³ÃæÀï£º
+echo     Ãû³ÆÌî£ºlarry-page-python-academy
+echo     ¿É¼ûĞÔÑ¡ Public£¬ÏÂÃæÊ²Ã´¶¼²»Òª¹´
+echo     µãÂÌÉ« Create repository
+echo.
+echo   ´´½¨Íê³Éºó£¬»Øµ½±¾´°¿Ú°´ÈÎÒâ¼ü¼ÌĞøÍÆËÍ...
+pause >nul
+goto push
+
+:ok
+del push_err.txt >nul 2>&1
+echo.
+echo [4/4] ÍÆËÍ³É¹¦£¡
+echo   ²Ö¿âµØÖ·£ºhttps://github.com/ndshuge-cloud/larry-page-python-academy
+echo   ÔÚÏßÍøÒ³£¨ĞèÔÚ²Ö¿â Settings-Pages ¿ªÆô£©£º
+echo   https://ndshuge-cloud.github.io/larry-page-python-academy/
 echo.
 pause

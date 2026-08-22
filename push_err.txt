@@ -1,0 +1,1 @@
+fatal: unable to access 'https://github.com/ndshuge-cloud/larry-page-python-academy.git/': Failed to connect to github.com:443 after 21140 ms: Could not connect to server
