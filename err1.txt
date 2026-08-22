@@ -1,2 +1,1 @@
-To https://github.com/ndshuge/ndshuge-python-academy.git
-   428b32a..956514c  main -> main
+fatal: unable to access 'https://github.com/ndshuge/ndshuge-python-academy.git/': schannel: failed to receive handshake, SSL/TLS connection failed
