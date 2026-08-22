@@ -1,2 +1,4 @@
 # 本地推送工具，不进仓库
 推送到GitHub.bat
+# 临时文件
+push_err.txt
