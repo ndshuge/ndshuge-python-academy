@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>拉里·佩奇的 Python 学院 · 从入门到实践</title>
+<title>🐭 鼠哥的 Python 学院 🐿️ · 从入门到实践</title>
 <style>
 :root{
   --bg:#F5EFE4; --card:#FBF7EE; --ink:#2A2622; --ink2:#4A433C; --muted:#6B6158;
@@ -116,6 +116,13 @@ body{
 .clear-actions button.danger:hover{background:rgba(139,44,31,.08)}
 .modal-sep{font-size:11px; letter-spacing:1px; color:#8a6d1f; margin:8px 0 2px; font-weight:600; border-top:1px dashed rgba(184,134,11,.3); padding-top:10px}
 .sb-status{font-size:11px; color:var(--muted); border:1px dashed rgba(83,125,150,.4); border-radius:980px; padding:8px 12px; cursor:pointer; text-align:center; transition:.15s; background:rgba(83,125,150,.05)}
+/* ===== 侧边栏用户卡 ===== */
+.user-card{background:linear-gradient(135deg,rgba(83,125,150,.16),rgba(83,125,150,.05)); border:1px solid rgba(83,125,150,.35); border-radius:12px; padding:10px 12px; cursor:pointer; display:flex; align-items:center; gap:10px; transition:.15s; margin:0 0 4px}
+.user-card:hover{background:rgba(83,125,150,.24); border-style:solid}
+.user-card .uc-ic{width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:17px; background:rgba(83,125,150,.22); flex:none}
+.user-card .uc-name{font-size:12.5px; font-weight:600; color:var(--ink); line-height:1.4; word-break:break-all}
+.user-card .uc-mail{font-size:10.5px; color:var(--muted); line-height:1.4; word-break:break-all; margin-top:1px}
+.user-card .uc-hint{font-size:10.5px; color:var(--muted); line-height:1.5}
 .sb-status:hover{background:rgba(83,125,150,.12); color:var(--blue); border-style:solid}
 .sb-status.ok{color:#3a6b47; border-color:rgba(58,107,71,.35); background:rgba(58,107,71,.06)}
 .sb-status.ok:hover{background:rgba(58,107,71,.12)}
@@ -130,6 +137,17 @@ body{
 .sb-btn.primary{border-color:var(--blue); color:var(--blue); font-weight:600}
 .sb-btn.primary:hover{background:var(--blue-bg)}
 .sb-tip{font-size:10.5px; color:#9a9288; line-height:1.6}
+/* ===== 账号管理 ===== */
+.sb-email{display:block; font-size:11px; color:#9a9288; margin-top:2px; word-break:break-all}
+.acc-actions{display:flex; flex-wrap:wrap; gap:6px}
+.acc-btn{border:1px dashed rgba(83,125,150,.45); background:rgba(83,125,150,.05); color:var(--blue); border-radius:8px; padding:6px 10px; font-family:inherit; font-size:11.5px; cursor:pointer; transition:.15s}
+.acc-btn:hover{background:rgba(83,125,150,.16)}
+.acc-frow{display:flex; gap:8px}
+.acc-frow .sb-input{flex:1}
+.acc-msg{font-size:11.5px; min-height:16px}
+.acc-tip{font-size:10.5px; color:#9a9288; line-height:1.6}
+.acc-avgrid{display:grid; grid-template-columns:repeat(6,1fr); gap:8px; justify-items:center; padding:2px 0}
+.acc-avgrid .avatar-opt{width:34px; height:34px; font-size:17px}
 .sb-msg{font-size:12px; min-height:18px; margin-top:2px}
 .login-overlay{position:fixed; inset:0; z-index:999; background:linear-gradient(160deg,#eef3f8,#e6ecf3); display:flex; align-items:center; justify-content:center}
 .login-card{background:var(--card); border:1px solid var(--line); border-radius:20px; width:min(380px, 92vw); padding:32px 30px; display:flex; flex-direction:column; gap:12px; box-shadow:0 20px 60px rgba(80,70,50,.2); text-align:center}
@@ -141,8 +159,60 @@ body{
 .login-btn:hover{background:rgba(83,125,150,.15)}
 .login-btn.primary{background:linear-gradient(135deg,#537D96,#3F6179); color:#fff; border:none}
 .login-btn.primary:hover{filter:brightness(1.08)}
+.login-btn.link{background:transparent; border:none; color:var(--muted); font-size:12px; font-weight:400; padding:4px 6px; flex:none; width:auto; text-decoration:underline; cursor:pointer}
+.login-btn.link:hover{color:var(--blue)}
+.login-forgot-row{display:flex; justify-content:space-between; align-items:center; min-height:20px}
 .login-msg{font-size:12px; min-height:18px; color:#8B2C1F}
 .login-tip{font-size:11px; color:#9a9288; line-height:1.7; background:rgba(43,37,29,.04); border-radius:8px; padding:9px 11px}
+/* ===== 登录 v2（用户名 + 头像）===== */
+.login-tabs{display:flex; background:rgba(43,37,29,.06); border-radius:10px; padding:4px; margin-bottom:2px}
+.login-tab{flex:1; border:none; background:transparent; border-radius:8px; padding:8px; font-family:inherit; font-size:13.5px; font-weight:600; color:var(--muted); cursor:pointer; transition:.15s}
+.login-tab:hover{color:var(--blue)}
+.login-tab.on{background:#fff; color:var(--blue); box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.avatar-pick{font-size:11px; color:#9a9288; text-align:left; margin:4px 2px -2px}
+.avatar-grid{display:grid; grid-template-columns:repeat(6,1fr); gap:8px; justify-items:center; padding:4px 0 2px}
+.avatar-opt{width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:19px; cursor:pointer; border:2px solid transparent; transition:.15s}
+.avatar-opt:hover{transform:scale(1.14)}
+.avatar-opt.sel{border-color:var(--blue); box-shadow:0 0 0 3px rgba(83,125,150,.22); transform:scale(1.1)}
+/* ===== 学院社区（侧边栏）===== */
+.com-block{display:flex; flex-direction:column; gap:7px; margin-top:12px}
+.com-btn{display:flex; align-items:center; gap:8px; border:1px solid rgba(83,125,150,.28); background:rgba(83,125,150,.08); color:var(--blue); border-radius:10px; padding:8px 12px; font-family:inherit; font-size:12px; cursor:pointer; transition:.15s; text-decoration:none; text-align:left}
+.com-btn:hover{background:rgba(83,125,150,.2); transform:translateY(-1px); color:var(--blue)}
+.com-btn .ic{font-size:14px; flex:none}
+.com-btn .go{margin-left:auto; font-size:10px; color:var(--muted)}
+.avatar-circle{width:32px; height:32px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:17px; flex:none; vertical-align:middle}
+.sb-avatar{width:20px; height:20px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:12px; flex:none; vertical-align:-4px; margin-right:5px}
+/* ===== 排行榜弹窗 ===== */
+.modal-card.wide{width:min(480px,92vw)}
+.rank-wrap{display:flex; flex-direction:column; gap:8px; max-height:62vh; overflow-y:auto}
+.rank-row{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; border:1px solid rgba(43,37,29,.08); background:#fff}
+.rank-row.me{border-color:rgba(184,134,11,.5); background:linear-gradient(90deg,rgba(184,134,11,.1),rgba(184,134,11,.03)); box-shadow:0 0 0 1px rgba(184,134,11,.25)}
+.rank-no{width:26px; text-align:center; font-weight:700; font-size:14px; color:#9a9288; flex:none}
+.rank-no.top{font-size:18px}
+.rank-info{flex:1; min-width:0}
+.rank-line1{display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:var(--ink2); min-width:0}
+.rank-line1 .rn{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.rank-tag{font-size:9.5px; color:#8a6d1f; background:rgba(184,134,11,.12); border:1px solid rgba(184,134,11,.25); border-radius:980px; padding:1px 7px; font-weight:600; flex:none}
+.rank-my{font-size:10.5px; color:#8a6d1f; font-weight:600; margin-left:auto; flex:none}
+.rank-pct{font-size:14px; font-weight:700; color:#3a6b47; flex:none}
+.rank-pbar{height:5px; background:rgba(43,37,29,.08); border-radius:980px; overflow:hidden; margin-top:5px}
+.rank-pbar i{display:block; height:100%; background:linear-gradient(90deg,#537D96,#6fa3bd); border-radius:980px}
+.rank-line2{display:flex; gap:12px; font-size:10.5px; color:#9a9288; margin-top:4px}
+.rank-empty{text-align:center; color:#9a9288; font-size:13px; padding:26px 0; line-height:1.8}
+/* ===== 留言弹窗 ===== */
+.fb-wrap{display:flex; flex-direction:column; gap:10px}
+.fb-text{border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-family:inherit; font-size:13px; background:#fff; resize:vertical; min-height:64px; outline:none; box-sizing:border-box; width:100%}
+.fb-text:focus{border-color:var(--blue)}
+.fb-send{align-self:flex-end}
+.fb-more{justify-content:center; width:100%; margin-top:2px}
+.fb-list{display:flex; flex-direction:column; gap:8px; max-height:300px; overflow-y:auto; margin-top:2px}
+.fb-item{display:flex; gap:9px; background:#fff; border:1px solid rgba(43,37,29,.08); border-radius:12px; padding:10px 12px}
+.fb-body{flex:1; min-width:0}
+.fb-head{display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:var(--ink2)}
+.fb-time{font-size:10px; color:#b0a89d; font-weight:400; margin-left:auto; flex:none}
+.fb-text2{font-size:12.5px; color:var(--ink2); line-height:1.65; margin-top:3px; white-space:pre-wrap; word-break:break-word}
+.fb-empty{text-align:center; color:#9a9288; font-size:12.5px; padding:18px 0; line-height:1.8}
+.fb-count{font-size:10.5px; color:#9a9288; text-align:center}
 
 /* ===== 主区域 ===== */
 #main{flex:1;min-width:0;padding:36px 44px 80px;max-width:980px;margin:0 auto}
@@ -374,6 +444,15 @@ pre.code .lang{position:absolute;top:8px;right:12px;font-size:10px;color:#777;le
 .tutor-era{font-size:12px; color:var(--muted); margin-bottom:10px; letter-spacing:1px}
 .tutor-fact{font-size:13.5px; color:var(--ink2); line-height:1.85}
 .tutor-quote{margin-top:12px; border-left:3px solid var(--gold); background:rgba(184,134,11,.07); border-radius:0 10px 10px 0; padding:10px 14px; font-size:13px; color:#7a5c10; font-style:italic}
+/* ===== 手机端适配 ===== */
+.side-fab{position:fixed; left:14px; bottom:18px; width:46px; height:46px; border-radius:50%; border:1px solid var(--line); background:var(--card); color:var(--blue); font-size:18px; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.18); z-index:9998; align-items:center; justify-content:center; display:none; transition:transform .15s}
+.side-fab:hover{transform:scale(1.1)}
+@media (max-width:860px){
+  #app{flex-direction:column}
+  #side{width:100%; height:auto; position:static; border-right:none; border-bottom:1px solid var(--line); transition:none}
+  #main{padding:24px 18px 60px}
+  #side.collapsed{display:none}
+}
 </style>
 <!-- CodeMirror 5（VSCode 同源编辑器内核，动态加载）-->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.css">
@@ -385,7 +464,15 @@ pre.code .lang{position:absolute;top:8px;right:12px;font-size:10px;color:#777;le
 <div id="app">
   <aside id="side">
     <button id="sideToggle" title="折叠/展开侧栏">«</button>
-    <h1>拉里·佩奇的 Python 学院<small>PYTHON ACADEMY · 从入门到实践</small></h1>
+    <h1>🐭 鼠哥的 Python 学院 🐿️<small>PYTHON ACADEMY · 从入门到实践</small></h1>
+    <div class="divider"></div>
+    <div id="userCard" class="user-card" onclick="openManageModal()">
+      <div class="uc-ic">👤</div>
+      <div>
+        <div class="uc-name">未登录</div>
+        <div class="uc-hint">点击登录 · 管理账号与进度</div>
+      </div>
+    </div>
     <div class="divider"></div>
     <nav class="nav" id="nav"></nav>
     <div class="divider"></div>
@@ -412,7 +499,11 @@ pre.code .lang{position:absolute;top:8px;right:12px;font-size:10px;color:#777;le
       <div id="statsGrid"></div>
     </div>
     <div id="quote">「代码是思维的乐高：复杂的世界，由简单的积木拼成。」—— 拉里·佩奇</div>
-    <div id="sbStatus" class="sb-status" onclick="openManageModal()">☁️ 云同步 · 未登录</div>
+    <div class="com-block">
+      <a class="com-btn" href="https://github.com/ndshuge-cloud/ndshuge-python-academy" target="_blank" rel="noopener"><span class="ic">📦</span>GitHub 仓库<span class="go">↗</span></a>
+      <button class="com-btn" onclick="openRank()"><span class="ic">🏆</span>学习排行榜<span class="go">→</span></button>
+      <button class="com-btn" onclick="openFeedback()"><span class="ic">💬</span>给作者留言<span class="go">→</span></button>
+    </div>
   </aside>
 
   <main id="main">
@@ -1061,7 +1152,7 @@ var NAV = [
     {id:'trace', ic:'👣', t:'学习足迹'},
     {id:'honor', ic:'🏆', t:'荣誉墙'},
     {id:'about', ic:'ℹ️', t:'关于'},
-    {id:'manage', ic:'📁', t:'管理进度'}
+    {id:'manage', ic:'📁', t:'管理账号与进度'}
   ]}
 ];
 var curPage = 'home';
@@ -1111,6 +1202,13 @@ function go(p){
   if(!st) return;
   var sideEl = document.getElementById('side');
   var sideBusy = false, sideT1 = null, sideT2 = null;
+  function sideFabSync(){
+    var fab = document.getElementById('sideFab');
+    if(!fab) return;
+    var isMobile = window.innerWidth <= 860;
+    fab.style.display = (isMobile && sideEl.classList.contains('collapsed')) ? 'flex' : 'none';
+  }
+  window.addEventListener('resize', sideFabSync);
   function sideClearTimers(){
     if(sideT1) clearTimeout(sideT1);
     if(sideT2) clearTimeout(sideT2);
@@ -1129,6 +1227,7 @@ function go(p){
         st.textContent = '»';
         store('sidefold', 1);
         sideBusy = false;
+        sideFabSync();
       }, 130);
     } else {
       sideEl.classList.add('hidden');
@@ -1143,6 +1242,7 @@ function go(p){
         sideT2 = setTimeout(function(){
           sideEl.classList.remove('fading');
           sideBusy = false;
+          sideFabSync();
         }, 320);
       }, 440);
     }
@@ -1151,6 +1251,7 @@ function go(p){
     sideEl.classList.add('collapsed');
     st.textContent = '»';
   }
+  sideFabSync();
 })();
 function toggleSide(){ document.getElementById('sideToggle').click(); }
 
@@ -1240,7 +1341,7 @@ function renderQuote(){
 /* ================= 首页 ================= */
 function renderHome(){
   var q = QUOTES[Math.floor(Math.random()*QUOTES.length)];
-  $('#page-home').innerHTML = '<div class="hero"><h2>欢迎来到拉里·佩奇的 Python 学院</h2><p>以马瑟斯《Python编程：从入门到实践（第 3 版）》为蓝本。五大战役、11 周计划，讲义、练习、代码判题、问答批改一条龙。这里没有观众，每个概念都要亲手敲成代码。</p><div class="cta"><button class="c1" onclick="go(\'plan\')">🗺️ 查看学习计划</button><button class="c2" onclick="go(\'lesson\')">📖 开始第一课</button></div></div>'
+  $('#page-home').innerHTML = '<div class="hero"><h2>🐭 欢迎来到鼠哥的 Python 学院 🐿️</h2><p>以马瑟斯《Python编程：从入门到实践（第 3 版）》为蓝本。五大战役、11 周计划，讲义、练习、代码判题、问答批改一条龙。这里没有观众，每个概念都要亲手敲成代码。</p><div class="cta"><button class="c1" onclick="go(\'plan\')">🗺️ 查看学习计划</button><button class="c2" onclick="go(\'lesson\')">📖 开始第一课</button></div></div>'
   + '<div class="card"><h3>🧑‍💻 导师寄语 <span class="tag">拉里·佩奇 · Google 联合创始人</span></h3><div class="qline">'+q+'</div><div class="about-sec" style="margin-top:8px">佩奇在斯坦福宿舍发明 PageRank 时，用的就是「把复杂问题拆成节点和关系」的思路。学 Python 也一样：把每个知识点当节点，亲手敲过的代码当边，学完一本书，你就有了一张自己的知识图谱。</div></div>'
   + '<div class="card"><h3>🗺️ 五大战役</h3>'+
   '<div class="about-sec">'+
@@ -1851,6 +1952,159 @@ function openManageModal(){
 }
 function closeManageModal(){ document.getElementById('progressModal').style.display='none'; }
 
+/* ================= 学院社区 v2：头像 / 登录模式 / 用户资料 ================ */
+var AVATARS = ['🦊','🐼','🐸','🐙','🦄','🐯','🐨','🐰','🦁','🐢','🐳','🦉','🐭','🐿️'];
+var AV_COLORS = ['#537D96','#5B8C5A','#6D9B7C','#C77B6D','#A67BB8','#D9A441','#8FA3B8','#C75B7A','#B57F5E','#7BA6A0','#A08BD1','#D08159','#9B8579','#C77B3D'];
+var signupMode = false, selAvatar = AVATARS[0];
+var authMode = 'login';
+function loginMode(up){
+  authMode = up ? 'signup' : 'login';
+  signupMode = up;
+  var tl = document.getElementById('tabLogin'), ts = document.getElementById('tabSignup');
+  if(tl){ tl.style.display = 'block'; tl.className = 'login-tab' + (up ? '' : ' on'); }
+  if(ts){ ts.style.display = 'block'; ts.className = 'login-tab' + (up ? ' on' : ''); }
+  var nm = document.getElementById('loginName'), ap = document.getElementById('avatarPick'), ag = document.getElementById('avatarGrid'), mb = document.getElementById('loginBtnMain'), tip = document.getElementById('loginTip'), pw = document.getElementById('loginPass');
+  if(nm) nm.style.display = up ? 'block' : 'none';
+  if(ap) ap.style.display = up ? 'block' : 'none';
+  if(ag) ag.style.display = up ? 'grid' : 'none';
+  if(pw) pw.style.display = 'block';
+  if(mb) mb.textContent = up ? '注 册' : '登 录';
+  if(tip) tip.textContent = up ? '注册后自动登录，进度云端保存，换设备不丢。' : '第一次用点「注册」，之后自动登录。同一账号，手机电脑进度同步。';
+  var fg = document.getElementById('loginForgot'), bk = document.getElementById('loginBack');
+  if(fg) fg.style.display = 'block';
+  if(bk) bk.style.display = 'none';
+  var msg = document.getElementById('loginMsg'); if(msg){ msg.textContent = ''; msg.style.color = '#8B2C1F'; }
+  if(up) buildAvatarGrid();
+}
+function showForgot(){
+  authMode = 'forgot';
+  var tl = document.getElementById('tabLogin'), ts = document.getElementById('tabSignup');
+  if(tl) tl.style.display = 'none';
+  if(ts) ts.style.display = 'none';
+  var nm = document.getElementById('loginName'), ap = document.getElementById('avatarPick'), ag = document.getElementById('avatarGrid'), pw = document.getElementById('loginPass'), mb = document.getElementById('loginBtnMain'), tip = document.getElementById('loginTip');
+  if(nm) nm.style.display = 'none';
+  if(ap) ap.style.display = 'none';
+  if(ag) ag.style.display = 'none';
+  if(pw) pw.style.display = 'none';
+  if(mb) mb.textContent = '发送重置链接';
+  if(tip) tip.textContent = '输入注册时用的邮箱，重置链接会发送到该邮箱（记得看垃圾箱）。';
+  var fg = document.getElementById('loginForgot'), bk = document.getElementById('loginBack');
+  if(fg) fg.style.display = 'none';
+  if(bk) bk.style.display = 'block';
+  var msg = document.getElementById('loginMsg'); if(msg){ msg.textContent = ''; msg.style.color = '#8B2C1F'; }
+}
+function backToLogin(){ loginMode(false); }
+/* ===== 找回密码 ===== */
+async function sendRecover(){
+  var email = $('#loginEmail').value.trim();
+  var msg = document.getElementById('loginMsg');
+  if(!email || !/\S+@\S+\.\S+/.test(email)){ msg.textContent = '请输入有效的邮箱'; msg.style.color = '#8B2C1F'; return; }
+  msg.textContent = '发送中…'; msg.style.color = '#8B2C1F';
+  try{
+    var redirect = location.origin + location.pathname;
+    var r = await fetch(SB_URL + '/auth/v1/recover', { method:'POST', headers:{'Content-Type':'application/json', 'apikey': SB_KEY}, body: JSON.stringify({ email: email, options: { redirect_to: redirect } }) });
+    var j = await r.json();
+    if(r.ok){
+      msg.textContent = '✅ 重置链接已发送到 ' + email + '，请查收邮件（含垃圾箱）';
+      msg.style.color = '#3a6b47';
+    } else {
+      msg.textContent = j.msg || j.error_description || '发送失败，请确认邮箱已注册';
+      msg.style.color = '#8B2C1F';
+    }
+  }catch(e){ msg.textContent = '网络错误：' + e.message; msg.style.color = '#8B2C1F'; }
+}
+function checkRecoveryHash(){
+  var h = location.hash || '';
+  if(h.indexOf('access_token') < 0 || h.indexOf('type=recovery') < 0) return false;
+  try{
+    var params = {};
+    h.replace(/^#/, '').split('&').forEach(function(kv){ var p = kv.split('='); if(p[0]) params[decodeURIComponent(p[0])] = decodeURIComponent(p[1]||''); });
+    if(!params.access_token || params.type !== 'recovery') return false;
+    fetch(SB_URL + '/auth/v1/user', { headers: { 'Authorization': 'Bearer ' + params.access_token, 'apikey': SB_KEY } })
+      .then(function(r){ return r.json(); })
+      .then(function(u){
+        if(u && u.id){
+          store('sb_session', { access_token: params.access_token, refresh_token: params.refresh_token || '', user: u });
+          try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
+          sbRefresh();
+          showResetUI();
+        }
+      }).catch(function(){});
+    return true;
+  }catch(e){ return false; }
+}
+function showResetUI(){
+  showLogin();
+  var ids = ['tabLogin','tabSignup','loginName','loginEmail','loginPass','avatarPick','avatarGrid','loginBtnMain','loginForgot','loginBack','loginMsg','loginTip'];
+  ids.forEach(function(id){ var el = document.getElementById(id); if(el) el.style.display = 'none'; });
+  var rb = document.getElementById('resetBlock'); if(rb) rb.style.display = 'flex';
+  rb.style.flexDirection = 'column';
+  rb.style.gap = '12px';
+  var m = document.getElementById('resetMsg'); if(m) m.textContent = '';
+}
+async function doReset(){
+  var p1 = document.getElementById('resetPass').value, p2 = document.getElementById('resetPass2').value;
+  var msg = document.getElementById('resetMsg');
+  if(p1.length < 6){ msg.textContent = '密码至少 6 位'; msg.style.color = '#8B2C1F'; return; }
+  if(p1 !== p2){ msg.textContent = '两次输入的密码不一致'; msg.style.color = '#8B2C1F'; return; }
+  msg.textContent = '更新中…'; msg.style.color = '#8B2C1F';
+  try{
+    var h = sbAuthHeaders();
+    if(!h){ msg.textContent = '重置链接已失效，请重新申请'; msg.style.color = '#8B2C1F'; return; }
+    var r = await fetch(SB_URL + '/auth/v1/user', { method:'PUT', headers:h, body: JSON.stringify({ password: p1 }) });
+    var j = await r.json();
+    if(r.ok && j.id){
+      msg.textContent = '✅ 密码已更新！请用新密码登录';
+      msg.style.color = '#3a6b47';
+      setTimeout(function(){ sbLogout(); }, 1200);
+    } else {
+      msg.textContent = j.msg || '更新失败，请重试';
+      msg.style.color = '#8B2C1F';
+    }
+  }catch(e){ msg.textContent = '网络错误：' + e.message; msg.style.color = '#8B2C1F'; }
+}
+function buildAvatarGrid(){
+  var g = document.getElementById('avatarGrid');
+  if(!g || g.childNodes.length) return;
+  g.innerHTML = AVATARS.map(function(a,i){
+    return '<div class="avatar-opt' + (i===0 ? ' sel' : '') + '" data-i="' + i + '" onclick="pickAvatar(' + i + ')" style="background:' + AV_COLORS[i] + '26">' + a + '</div>';
+  }).join('');
+}
+function pickAvatar(i){
+  selAvatar = AVATARS[i];
+  document.querySelectorAll('#avatarGrid .avatar-opt').forEach(function(e,ix){ e.classList.toggle('sel', ix===i); });
+}
+function avColor(a){
+  var i = AVATARS.indexOf(a);
+  return i >= 0 ? AV_COLORS[i] : '#537D96';
+}
+function curProfile(){
+  var s = sbSession();
+  if(!s || !s.user) return null;
+  var p = load('profile', null);
+  if(p && p.username) return p;
+  var u = (s.user.email && s.user.email.split('@')[0]) || '同学';
+  return { username: u, avatar: '🦊' };
+}
+async function sbEnsureProfile(){
+  var s = sbSession();
+  if(!s || !s.user) return;
+  var h = sbAuthHeaders(); if(!h) return;
+  try{
+    var r = await fetch(SB_URL + '/rest/v1/profiles?select=username,avatar&user_id=eq.' + s.user.id, { headers:h });
+    var rows = await r.json();
+    if(rows && rows.length && rows[0].username){
+      store('profile', { username: rows[0].username, avatar: rows[0].avatar || '🦊' });
+    } else {
+      var p = curProfile();
+      var body = { user_id: s.user.id, username: p.username, avatar: p.avatar };
+      var r2 = await fetch(SB_URL + '/rest/v1/profiles', { method:'POST', headers:h, body: JSON.stringify(body) });
+      if(!r2.ok){
+        await fetch(SB_URL + '/rest/v1/profiles?user_id=eq.' + s.user.id, { method:'PATCH', headers:h, body: JSON.stringify({ username: p.username, avatar: p.avatar }) });
+      }
+    }
+  }catch(e){}
+}
 /* ================= 云同步（Supabase，多设备进度对齐）================= */
 var SB_URL = 'https://yycokuphczoxfntcwizi.supabase.co';
 var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5Y29rdXBoY3pveGZudGN3aXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MDM3MzgsImV4cCI6MjEwMjk3OTczOH0.1vm61oyqeBmc2lL_q0-rgJT2x6TsOn_DXsQo1GQJbSM';
@@ -1870,7 +2124,7 @@ async function sbEnsureToken(){
   if(live) return true;
   if(!s.refresh_token) return false;
   try{
-    var r = await fetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({refresh_token: s.refresh_token}) });
+    var r = await fetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', { method:'POST', headers:{'Content-Type':'application/json', 'apikey': SB_KEY}, body: JSON.stringify({refresh_token: s.refresh_token}) });
     var j = await r.json();
     if(j.access_token){ store('sb_session', {access_token: j.access_token, refresh_token: j.refresh_token || s.refresh_token, user: j.user || s.user}); return true; }
   }catch(e){}
@@ -1886,6 +2140,36 @@ function sbPack(){
     qstat: load('qstat', {}), wrong: load('wrong', []), fixed: load('fixed', []), log: load('log', [])
   };
 }
+/* 合并两端进度：数组取并集去重，对象取键并集，不互相覆盖 */
+var MERGE_ARR = ['lessons','ch','wrong','fixed','log'];
+var MERGE_OBJ = ['hall','qstat'];
+function loadAllProgress(){
+  var out = {};
+  MERGE_ARR.concat(MERGE_OBJ).forEach(function(k){ out[k] = load(k, MERGE_OBJ.indexOf(k) >= 0 ? {} : []); });
+  return out;
+}
+function storeAllProgress(d){
+  MERGE_ARR.concat(MERGE_OBJ).forEach(function(k){ if(d[k] !== undefined) store(k, d[k]); });
+}
+function mergeProgress(local, cloud){
+  var out = {};
+  MERGE_ARR.forEach(function(k){
+    var a = local[k] || [], b = cloud[k] || [];
+    var seen = {}, arr = [];
+    a.concat(b).forEach(function(x){
+      var key = (typeof x === 'object' && x !== null) ? JSON.stringify(x) : String(x);
+      if(!seen[key]){ seen[key] = 1; arr.push(x); }
+    });
+    out[k] = arr;
+  });
+  MERGE_OBJ.forEach(function(k){
+    var a = local[k] || {}, b = cloud[k] || {}, m = {};
+    Object.keys(a).forEach(function(key){ m[key] = a[key]; });
+    Object.keys(b).forEach(function(key){ m[key] = b[key]; });
+    out[k] = m;
+  });
+  return out;
+}
 function showLogin(){
   var el = document.getElementById('loginOverlay');
   if(el) el.style.display = 'flex';
@@ -1894,26 +2178,38 @@ function hideLogin(){
   var el = document.getElementById('loginOverlay');
   if(el) el.style.display = 'none';
 }
-function loginDo(){ sbAuth(false); }
-function signupDo(){ sbAuth(true); }
+function loginDo(){ if(authMode === 'forgot'){ sendRecover(); return; } sbAuth(signupMode); }
+function signupDo(){ loginMode(true); }
 async function sbAuth(doSignup){
   var email = $('#loginEmail').value.trim(), pass = $('#loginPass').value;
   var msg = document.getElementById('loginMsg');
+  var uname = '', av = selAvatar;
+  if(doSignup){
+    uname = $('#loginName').value.trim();
+    if(!/^[\u4e00-\u9fa5A-Za-z0-9_]{3,16}$/.test(uname)){ msg.textContent = '用户名需 3~16 位：中文/字母/数字/下划线'; return; }
+  }
   if(!email || !/\S+@\S+\.\S+/.test(email)){ msg.textContent = '请输入有效的邮箱'; return; }
   if(pass.length < 6){ msg.textContent = '密码至少 6 位'; return; }
   msg.textContent = doSignup ? '注册中…' : '登录中…';
   try{
+    if(doSignup){
+      var dup = await fetch(SB_URL + '/rest/v1/profiles?select=username&username=eq.' + encodeURIComponent(uname), { headers: { 'apikey': SB_KEY } });
+      var dupRows = await dup.json();
+      if(dupRows && dupRows.length){ msg.textContent = '这个用户名已被占用，换一个试试'; return; }
+    }
     var url = doSignup ? (SB_URL + '/auth/v1/signup') : (SB_URL + '/auth/v1/token?grant_type=password');
-    var body = { email: email, password: pass };
-    var r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    var body = doSignup ? { email: email, password: pass, data: { username: uname, avatar: av } } : { email: email, password: pass };
+    var r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json', 'apikey': SB_KEY}, body: JSON.stringify(body) });
     var j = await r.json();
     if(j.access_token){
       store('sb_session', {access_token: j.access_token, refresh_token: j.refresh_token, user: j.user});
+      if(doSignup) store('profile', { username: uname, avatar: av });
       msg.textContent = '';
       hideLogin();
       sbRefresh();
+      sbEnsureProfile();
       if(doSignup){ sbMsg('注册成功，已自动登录', true); await sbPush(true); }
-      else { sbMsg('登录成功，正在同步进度…', true); await sbSyncFromCloud(); }
+      else { sbMsg('登录成功，正在同步进度…', true); await sbSyncFromCloud(); sbEnsureProfile(); }
     } else {
       msg.textContent = j.msg || j.error_description || (doSignup ? '注册失败（邮箱可能已存在）' : '登录失败（邮箱或密码不对）');
     }
@@ -1929,17 +2225,17 @@ async function sbSyncFromCloud(){
   if(!(await sbEnsureToken())){ sbMsg('登录已失效，请重新登录'); return; }
   var h = sbAuthHeaders(); var s = sbSession();
   if(!h || !s){ sbMsg('请先登录'); return; }
-  sbMsg('正在从云端同步…');
+  sbMsg('正在同步并合并两端进度…');
   try{
     var r = await fetch(SB_URL + '/rest/v1/progress?select=data&user_id=eq.' + s.user.id, { headers:h });
     var rows = await r.json();
     if(rows && rows.length && rows[0].data){
       var d = rows[0].data;
-      ['lessons','ch','hall','qstat','wrong','fixed','log'].forEach(function(k){
-        if(d[k] !== undefined) store(k, d[k]);
-      });
-      sbMsg('已从云端同步最新进度', true);
+      var merged = mergeProgress(loadAllProgress(), d);
+      storeAllProgress(merged);
+      sbMsg('✅ 已合并两端进度（取并集，不丢数据）', true);
       renderProgress();
+      await sbPush(true);
     } else {
       await sbPush(true);
       sbMsg('已把本地进度上传云端', true);
@@ -1968,29 +2264,147 @@ async function sbPush(immediate){
       body.user_id = s.user.id;
       await fetch(SB_URL + '/rest/v1/progress', { method:'POST', headers:h, body: JSON.stringify(body) });
     }
+    sbPushRank(h, s);
+  }catch(e){}
+}
+function sbPushRank(h, s){
+  try{
+    var st = calcStats();
+    var rank = curRank(st.pct);
+    var p = curProfile();
+    if(!p) return;
+    var rb = { user_id: s.user.id, app: 'python', username: p.username, avatar: p.avatar, pct: st.pct, done: Object.keys(quizStat).length, lessons: st.doneL, rank_name: rank.name, updated_at: new Date().toISOString() };
+    var hh = Object.assign({}, h, { 'Prefer': 'resolution=merge-duplicates' });
+    fetch(SB_URL + '/rest/v1/leaderboard', { method:'POST', headers: hh, body: JSON.stringify(rb) }).catch(function(){});
   }catch(e){}
 }
 function sbNotify(){ if(sbSession()) sbPush(false); }
 function sbRefresh(){
   var box = document.getElementById('sbPanel');
   var s = sbSession();
-  var status = document.getElementById('sbStatus');
-  if(status){
+  var card = document.getElementById('userCard');
+  if(card){
     if(s){
-      status.className = 'sb-status ok';
-      status.textContent = '☁️ 已同步：' + (s.user && s.user.email ? s.user.email.split('@')[0] : '已登录');
+      var p = curProfile();
+      card.innerHTML = '<div class="uc-ic" style="background:' + avColor(p.avatar) + '2b">' + p.avatar + '</div>'
+        + '<div style="min-width:0"><div class="uc-name">' + esc(p.username) + '</div>'
+        + '<div class="uc-mail">' + esc(s.user && s.user.email ? s.user.email : '') + '</div></div>';
+      card.title = '管理账号与进度';
     } else {
-      status.className = 'sb-status';
-      status.textContent = '☁️ 登录后可多设备同步进度';
+      card.innerHTML = '<div class="uc-ic">👤</div><div><div class="uc-name">未登录</div><div class="uc-hint">点击登录 · 管理账号与进度</div></div>';
+      card.title = '登录';
     }
   }
   if(!box) return;
   if(s){
-    box.innerHTML = '<div class="sb-user">✅ 已登录：<b>' + esc(s.user.email) + '</b></div><div class="sb-actions"><button class="sb-btn primary" onclick="sbSyncFromCloud()">🔄 立即同步</button><button class="sb-btn" onclick="sbLogout()">退出登录</button></div><div class="sb-tip">学习进度会自动同步到云端，换设备登录即恢复。首次登录后自动保持，无需重复登录。</div>';
+    var p2 = curProfile();
+    box.innerHTML = '<div class="sb-user">✅ 已登录：<span class="avatar-circle" style="background:' + avColor(p2.avatar) + '">' + p2.avatar + '</span> <b>' + esc(p2.username) + '</b><span class="sb-email">' + esc(s.user && s.user.email ? s.user.email : '') + '</span></div>'
+      + '<div class="sb-actions"><button class="sb-btn primary" onclick="sbSyncFromCloud()">🔄 立即同步</button><button class="sb-btn" onclick="sbLogout()">退出登录</button></div>'
+      + '<div class="acc-actions">'
+      +   '<button class="acc-btn" onclick="toggleAccForm(\'user\')">✏️ 改用户名</button>'
+      +   '<button class="acc-btn" onclick="toggleAccForm(\'avatar\')">🖼 改头像</button>'
+      +   '<button class="acc-btn" onclick="toggleAccForm(\'email\')">📧 改邮箱</button>'
+      +   '<button class="acc-btn" onclick="toggleAccForm(\'pass\')">🔑 改密码</button>'
+      + '</div>'
+      + '<div id="accForm"></div>'
+      + '<div class="sb-tip">学习进度自动同步到云端，换设备登录即恢复。账号信息（用户名/头像/邮箱/密码）都可在这里修改。</div>';
   } else {
-    box.innerHTML = '<div class="sb-tip">未登录。登录入口在启动时已弹出；也可点上方「退出登录」重新登录。</div>';
+    box.innerHTML = '<div class="sb-tip">未登录。登录入口在启动时已弹出；登录后可在此修改用户名、邮箱和密码。</div>';
   }
   var msg = document.getElementById('sbMsg'); if(msg) msg.textContent = '';
+}
+/* ===== 账号管理 ===== */
+var accFormType = null, selAccAvatar = null;
+function accMsg2(t, ok){
+  var m = document.getElementById('accMsg');
+  if(m){ m.textContent = t; m.style.color = ok ? '#3a6b47' : '#8B2C1F'; }
+}
+function toggleAccForm(t){
+  accFormType = (accFormType === t) ? null : t;
+  var f = document.getElementById('accForm');
+  if(!f) return;
+  if(!accFormType){ f.innerHTML = ''; return; }
+  var p = curProfile();
+  if(t === 'user'){
+    f.innerHTML = '<div class="acc-frow"><input id="accName" class="sb-input" maxlength="16" placeholder="新用户名（3~16 位）" onkeydown="if(event.key===\'Enter\') saveUsername()"><button class="sb-btn primary" onclick="saveUsername()">保存</button></div><div class="acc-msg" id="accMsg"></div>';
+  } else if(t === 'avatar'){
+    selAccAvatar = p.avatar;
+    f.innerHTML = '<div class="acc-avgrid">' + AVATARS.map(function(a,i){
+      return '<div class="avatar-opt' + (a === p.avatar ? ' sel' : '') + '" onclick="pickAccAvatar(' + i + ')" style="background:' + AV_COLORS[i] + '26">' + a + '</div>';
+    }).join('') + '</div><button class="modal-btn fb-send" style="justify-content:center" onclick="saveAvatar()">保存头像</button><div class="acc-msg" id="accMsg"></div>';
+  } else if(t === 'email'){
+    f.innerHTML = '<div class="acc-frow"><input id="accEmail" class="sb-input" type="email" placeholder="新邮箱" onkeydown="if(event.key===\'Enter\') saveEmail()"><button class="sb-btn primary" onclick="saveEmail()">保存</button></div><div class="acc-tip">修改后请用新邮箱登录；若项目开启了邮箱验证，会先发确认邮件。</div><div class="acc-msg" id="accMsg"></div>';
+  } else if(t === 'pass'){
+    f.innerHTML = '<div class="acc-frow"><input id="accPass" class="sb-input" type="password" placeholder="新密码（至少 6 位）"><input id="accPass2" class="sb-input" type="password" placeholder="再次输入"></div><button class="modal-btn fb-send" style="justify-content:center" onclick="savePass()">保存新密码</button><div class="acc-msg" id="accMsg"></div>';
+  }
+}
+function pickAccAvatar(i){
+  selAccAvatar = AVATARS[i];
+  document.querySelectorAll('#accForm .avatar-opt').forEach(function(e,ix){ e.classList.toggle('sel', ix === i); });
+}
+async function saveUsername(){
+  var n = document.getElementById('accName').value.trim();
+  if(!/^[\u4e00-\u9fa5A-Za-z0-9_]{3,16}$/.test(n)){ accMsg2('用户名需 3~16 位：中文/字母/数字/下划线', false); return; }
+  var s = sbSession(); if(!s){ accMsg2('请先登录', false); return; }
+  try{
+    var dup = await fetch(SB_URL + '/rest/v1/profiles?select=username&username=eq.' + encodeURIComponent(n), { headers:{ 'apikey': SB_KEY } });
+    var rows = await dup.json();
+    if(rows && rows.length){ accMsg2('这个用户名已被占用', false); return; }
+    var h = sbAuthHeaders();
+    var r = await fetch(SB_URL + '/rest/v1/profiles?user_id=eq.' + s.user.id, { method:'PATCH', headers:h, body: JSON.stringify({ username: n }) });
+    if(r.ok){
+      var p = curProfile();
+      store('profile', { username: n, avatar: p.avatar });
+      accMsg2('✅ 用户名已更新', true);
+      sbRefresh();
+      sbPushRank(sbAuthHeaders(), s);
+    } else { accMsg2('更新失败，稍后再试', false); }
+  }catch(e){ accMsg2('网络错误：' + e.message, false); }
+}
+async function saveAvatar(){
+  var s = sbSession(); if(!s){ accMsg2('请先登录', false); return; }
+  if(!selAccAvatar) return;
+  try{
+    var h = sbAuthHeaders();
+    var r = await fetch(SB_URL + '/rest/v1/profiles?user_id=eq.' + s.user.id, { method:'PATCH', headers:h, body: JSON.stringify({ avatar: selAccAvatar }) });
+    if(r.ok){
+      var p = curProfile();
+      store('profile', { username: p.username, avatar: selAccAvatar });
+      accMsg2('✅ 头像已更新', true);
+      sbRefresh();
+      sbPushRank(sbAuthHeaders(), s);
+    } else { accMsg2('更新失败，稍后再试', false); }
+  }catch(e){ accMsg2('网络错误：' + e.message, false); }
+}
+async function saveEmail(){
+  var e = document.getElementById('accEmail').value.trim();
+  if(!/\S+@\S+\.\S+/.test(e)){ accMsg2('请输入有效邮箱', false); return; }
+  var h = sbAuthHeaders(); if(!h){ accMsg2('请先登录', false); return; }
+  try{
+    var r = await fetch(SB_URL + '/auth/v1/user', { method:'PUT', headers:h, body: JSON.stringify({ email: e }) });
+    var j = await r.json();
+    if(r.ok && j.id){
+      var s = sbSession();
+      if(s && s.user){ s.user.email = e; store('sb_session', s); }
+      accMsg2('✅ 邮箱已更新，请用新邮箱登录', true);
+      sbRefresh();
+    } else { accMsg2(j.msg || '更新失败，邮箱可能已被占用', false); }
+  }catch(err){ accMsg2('网络错误：' + err.message, false); }
+}
+async function savePass(){
+  var p1 = document.getElementById('accPass').value, p2 = document.getElementById('accPass2').value;
+  if(p1.length < 6){ accMsg2('密码至少 6 位', false); return; }
+  if(p1 !== p2){ accMsg2('两次输入的密码不一致', false); return; }
+  var h = sbAuthHeaders(); if(!h){ accMsg2('请先登录', false); return; }
+  try{
+    var r = await fetch(SB_URL + '/auth/v1/user', { method:'PUT', headers:h, body: JSON.stringify({ password: p1 }) });
+    var j = await r.json();
+    if(r.ok && j.id){
+      accMsg2('✅ 密码已更新', true);
+      var a1 = document.getElementById('accPass'); if(a1) a1.value = '';
+      var a2 = document.getElementById('accPass2'); if(a2) a2.value = '';
+    } else { accMsg2(j.msg || '更新失败，请重试', false); }
+  }catch(err){ accMsg2('网络错误：' + err.message, false); }
 }
 /* 启动时静默同步 */
 function sbInit(){
@@ -2000,18 +2414,118 @@ function sbInit(){
   sbEnsureToken().then(function(ok){
     if(!ok){ sbLogout(); showLogin(); return; }
     hideLogin();
+    sbEnsureProfile();
     fetch(SB_URL + '/rest/v1/progress?select=data&user_id=eq.' + sbSession().user.id, { headers: sbAuthHeaders() })
       .then(function(r){ return r.json(); })
       .then(function(rows){
         if(rows && rows.length && rows[0].data){
           var d = rows[0].data;
-          ['lessons','ch','hall','qstat','wrong','fixed','log'].forEach(function(k){
-            if(d[k] !== undefined) store(k, d[k]);
-          });
+          var merged = mergeProgress(loadAllProgress(), d);
+          storeAllProgress(merged);
           renderProgress();
         }
       }).catch(function(){});
   });
+}
+
+/* ================= 排行榜 ================= */
+function openRank(){
+  document.getElementById('rankModal').style.display = 'flex';
+  var w = document.getElementById('rankWrap');
+  w.innerHTML = '<div class="rank-empty">加载中…</div>';
+  var h = sbAuthHeaders();
+  if(!h){ w.innerHTML = '<div class="rank-empty">请先登录再查看排行榜</div>'; return; }
+  fetch(SB_URL + '/rest/v1/leaderboard?select=user_id,username,avatar,pct,done,lessons,rank_name&order=pct.desc&app=eq.python&limit=100', { headers:h })
+    .then(function(r){ return r.json(); })
+    .then(function(rows){
+      if(!rows || !rows.length){ w.innerHTML = '<div class="rank-empty">还没有人上榜，快去学习成为第一名吧！🐍</div>'; return; }
+      var me = sbSession().user.id;
+      var medals = ['🥇','🥈','🥉'];
+      w.innerHTML = rows.map(function(x,i){
+        var isMe = x.user_id === me;
+        var no = i < 3 ? '<div class="rank-no top">' + medals[i] + '</div>' : '<div class="rank-no">' + (i+1) + '</div>';
+        var name = esc(x.username || '同学'), tag = esc(x.rank_name || '终端学徒');
+        return '<div class="rank-row' + (isMe ? ' me' : '') + '">' + no
+          + '<span class="avatar-circle" style="background:' + avColor(x.avatar) + '">' + x.avatar + '</span>'
+          + '<div class="rank-info"><div class="rank-line1"><span class="rn">' + name + '</span><span class="rank-tag">' + tag + '</span>' + (isMe ? '<span class="rank-my">👈 这是你</span>' : '') + '</div>'
+          + '<div class="rank-pbar"><i style="width:' + Math.min(100, x.pct || 0) + '%"></i></div>'
+          + '<div class="rank-line2">做题 ' + (x.done || 0) + ' 题 · 上课 ' + (x.lessons || 0) + ' 节</div></div>'
+          + '<div class="rank-pct">' + (x.pct || 0) + '%</div></div>';
+      }).join('');
+    })
+    .catch(function(){ w.innerHTML = '<div class="rank-empty">加载失败，检查网络后重试</div>'; });
+}
+function closeRank(){ document.getElementById('rankModal').style.display = 'none'; }
+
+/* ================= 留言 ================= */
+var fbPage = 0, fbTotal = 0;
+function openFeedback(){
+  document.getElementById('fbModal').style.display = 'flex';
+  var m = document.getElementById('fbMsg'); if(m) m.textContent = '';
+  loadFeedback(true);
+}
+function closeFeedback(){ document.getElementById('fbModal').style.display = 'none'; }
+function loadFeedback(reset){
+  if(reset){ fbPage = 0; fbTotal = 0; }
+  var list = document.getElementById('fbList');
+  var h = sbAuthHeaders();
+  if(!h){ list.innerHTML = '<div class="fb-empty">请先登录再留言</div>'; return; }
+  if(fbPage === 0) list.innerHTML = '<div class="fb-empty">加载中…</div>';
+  fetch(SB_URL + '/rest/v1/feedback?select=username,avatar,content,created_at&order=created_at.desc&app=eq.python&offset=' + (fbPage*20) + '&limit=20', { headers:h })
+    .then(function(r){
+      var cr = r.headers.get('content-range') || '';
+      var m = cr.match(/\/(\d+)$/);
+      if(m) fbTotal = parseInt(m[1], 10);
+      return r.json();
+    })
+    .then(function(rows){
+      var cnt = document.getElementById('fbCount');
+      var more = document.getElementById('fbMore');
+      if(!rows || !rows.length){
+        if(fbPage === 0) list.innerHTML = '<div class="fb-empty">还没有留言，沙发等你来坐 🛋️</div>';
+        if(more) more.style.display = 'none';
+        if(cnt) cnt.textContent = fbTotal ? ('共 ' + fbTotal + ' 条留言 · 全部实名 · 显示时间') : '';
+        return;
+      }
+      var html = rows.map(function(x){
+        return '<div class="fb-item"><span class="avatar-circle" style="background:' + avColor(x.avatar) + '">' + x.avatar + '</span>'
+          + '<div class="fb-body"><div class="fb-head">' + esc(x.username || '同学') + '<span class="fb-time">' + fmtTime(x.created_at) + '</span></div>'
+          + '<div class="fb-text2">' + esc(x.content) + '</div></div></div>';
+      }).join('');
+      list.innerHTML = (fbPage === 0 ? '' : list.innerHTML) + html;
+      fbPage++;
+      if(cnt) cnt.textContent = fbTotal ? ('共 ' + fbTotal + ' 条留言 · 全部实名 · 显示时间') : ('已显示 ' + (fbPage*20) + ' 条');
+      if(more) more.style.display = (fbPage*20 < fbTotal) ? 'block' : 'none';
+    })
+    .catch(function(){ if(fbPage === 0) list.innerHTML = '<div class="fb-empty">加载失败，检查网络后重试</div>'; });
+}
+async function sendFeedback(){
+  var t = document.getElementById('fbText').value.trim();
+  var m = document.getElementById('fbMsg');
+  if(!t){ if(m){ m.textContent = '写点什么再发送吧'; m.style.color = '#8B2C1F'; } return; }
+  var s = sbSession();
+  if(!s){ if(m){ m.textContent = '请先登录'; m.style.color = '#8B2C1F'; } return; }
+  var p = curProfile();
+  if(m){ m.textContent = '发送中…'; m.style.color = '#9a9288'; }
+  try{
+    var r = await fetch(SB_URL + '/rest/v1/feedback', { method:'POST', headers: sbAuthHeaders(), body: JSON.stringify({ user_id: s.user.id, app: 'python', username: p.username, avatar: p.avatar, content: t }) });
+    if(r.ok){
+      document.getElementById('fbText').value = '';
+      if(m){ m.textContent = '已署名送达作者，谢谢你的话 💛'; m.style.color = '#3a6b47'; }
+      loadFeedback(true);
+    } else if(m){ m.textContent = '发送失败，请确认已登录且网络正常'; m.style.color = '#8B2C1F'; }
+  }catch(e){ if(m){ m.textContent = '网络错误：' + e.message; m.style.color = '#8B2C1F'; } }
+}
+function fmtTime(t){
+  if(!t) return '';
+  var d = new Date(t), now = new Date();
+  var diff = Math.floor((now - d) / 1000);
+  var dayStr = (d.getMonth()+1) + '月' + d.getDate() + '日';
+  if(diff < 60) return '刚刚 · ' + dayStr;
+  if(diff < 3600) return Math.floor(diff/60) + ' 分钟前 · ' + dayStr;
+  if(diff < 86400) return Math.floor(diff/3600) + ' 小时前 · ' + dayStr;
+  if(diff < 86400*7) return Math.floor(diff/86400) + ' 天前 · ' + dayStr;
+  return dayStr;
 }
 
 /* ================= 启动 ================= */
@@ -2020,7 +2534,7 @@ go('home');
 renderProgress();
 renderPlan();
 renderHome();
-sbInit();
+if(!checkRecoveryHash()){ sbInit(); }
 /* 预加载 Python 运行时（后台静默加载） */
 if(!pyLoading) ensurePy();
 </script>
@@ -2028,21 +2542,40 @@ if(!pyLoading) ensurePy();
 <div id="loginOverlay" class="login-overlay" style="display:none">
   <div class="login-card">
     <div class="login-logo">🐍</div>
-    <div class="login-title">拉里·佩奇的 Python 学院</div>
+    <div class="login-title">🐭 鼠哥的 Python 学院 🐿️</div>
     <div class="login-sub">登录后开始学习 · 进度多设备自动同步</div>
+    <div class="login-tabs">
+      <button class="login-tab on" id="tabLogin" onclick="loginMode(false)">登 录</button>
+      <button class="login-tab" id="tabSignup" onclick="loginMode(true)">注 册</button>
+    </div>
+    <input id="loginName" class="sb-input" style="display:none" type="text" maxlength="16" placeholder="用户名（3~16 位，中文/字母/数字/下划线）" onkeydown="if(event.key==='Enter') loginDo()">
     <input id="loginEmail" class="sb-input" type="email" placeholder="邮箱" onkeydown="if(event.key==='Enter') loginDo()">
     <input id="loginPass" class="sb-input" type="password" placeholder="密码（至少 6 位）" onkeydown="if(event.key==='Enter') loginDo()">
+    <div class="avatar-pick" id="avatarPick" style="display:none">选一个头像</div>
+    <div class="avatar-grid" id="avatarGrid" style="display:none"></div>
     <div class="login-actions">
-      <button class="login-btn primary" onclick="loginDo()">登 录</button>
-      <button class="login-btn" onclick="signupDo()">注 册</button>
+      <button class="login-btn primary" id="loginBtnMain" onclick="loginDo()">登 录</button>
+    </div>
+    <div class="login-forgot-row">
+      <button class="login-btn link" id="loginForgot" onclick="showForgot()">忘记密码？</button>
+      <button class="login-btn link" id="loginBack" style="display:none" onclick="backToLogin()">← 返回登录</button>
     </div>
     <div id="loginMsg" class="login-msg"></div>
-    <div class="login-tip">第一次用点「注册」，之后自动登录。同一账号，手机电脑进度同步。</div>
+    <div class="login-tip" id="loginTip">第一次用点「注册」，之后自动登录。同一账号，手机电脑进度同步。</div>
+    <div id="resetBlock" style="display:none">
+      <div class="login-title" style="font-size:16px; margin-top:2px">🔑 设置新密码</div>
+      <div class="login-sub">为你的账号设置一个新密码</div>
+      <input id="resetPass" class="sb-input" type="password" placeholder="新密码（至少 6 位）" onkeydown="if(event.key==='Enter') doReset()">
+      <input id="resetPass2" class="sb-input" type="password" placeholder="再次输入新密码" onkeydown="if(event.key==='Enter') doReset()">
+      <button class="login-btn primary" onclick="doReset()">更新密码</button>
+      <div id="resetMsg" class="login-msg"></div>
+    </div>
   </div>
 </div>
+<button id="sideFab" class="side-fab" onclick="toggleSide()" title="展开侧栏">☰</button>
 <div class="modal-mask" id="progressModal" style="display:none" onclick="closeManageModal()">
   <div class="modal-card" onclick="event.stopPropagation()">
-    <div class="modal-head">📁 管理进度<button class="modal-x" onclick="closeManageModal()">✕</button></div>
+    <div class="modal-head">📁 管理账号与进度<button class="modal-x" onclick="closeManageModal()">✕</button></div>
     <div class="modal-body">
       <div class="modal-stats" id="modalStats"></div>
       <button class="modal-btn" onclick="exportData()">📤 导出进度 <small>下载 JSON 备份</small></button>
@@ -2058,9 +2591,32 @@ if(!pyLoading) ensurePy();
         </div>
       </div>
       <div class="modal-tip">学习数据保存在本机浏览器（localStorage）中。换设备或清理浏览器前记得先导出；导入会覆盖当前进度。</div>
-      <div class="modal-sep">☁️ 云同步（多设备进度对齐）</div>
+      <div class="modal-sep">👤 账号管理（云同步 · 多设备进度对齐）</div>
       <div id="sbPanel" class="sb-panel"></div>
       <div id="sbMsg" class="sb-msg"></div>
+    </div>
+  </div>
+</div>
+<!-- 排行榜弹窗 -->
+<div class="modal-mask" id="rankModal" style="display:none" onclick="closeRank()">
+  <div class="modal-card wide" onclick="event.stopPropagation()">
+    <div class="modal-head">🏆 学习排行榜<button class="modal-x" onclick="closeRank()">✕</button></div>
+    <div class="modal-body">
+      <div class="rank-wrap" id="rankWrap"><div class="rank-empty">加载中…</div></div>
+    </div>
+  </div>
+</div>
+<!-- 留言弹窗 -->
+<div class="modal-mask" id="fbModal" style="display:none" onclick="closeFeedback()">
+  <div class="modal-card wide" onclick="event.stopPropagation()">
+    <div class="modal-head">💬 给作者留言<button class="modal-x" onclick="closeFeedback()">✕</button></div>
+    <div class="modal-body">
+      <textarea id="fbText" class="fb-text" maxlength="300" placeholder="建议、想说的话、遇到的坑…（300 字以内）"></textarea>
+      <button class="modal-btn fb-send" onclick="sendFeedback()">发送留言</button>
+      <div id="fbMsg" class="sb-msg"></div>
+      <div class="fb-count" id="fbCount"></div>
+      <div class="fb-list" id="fbList"><div class="fb-empty">加载中…</div></div>
+      <button class="modal-btn fb-more" id="fbMore" style="display:none" onclick="loadFeedback(false)">加载更多留言</button>
     </div>
   </div>
 </div>
