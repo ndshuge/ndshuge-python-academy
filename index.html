@@ -183,7 +183,9 @@ pre.code .lang{position:absolute;top:8px;right:12px;font-size:10px;color:#777;le
 .trap .x{color:var(--red);flex-shrink:0}
 /* ===== 练习 ===== */
 .quiz{border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px;background:var(--card);transition:.2s}
-.quiz.done{border-color:var(--green);background:#f7faf4}
+.quiz.done{border-color:var(--green);background:#f4f9f3;border-left:4px solid var(--green);box-shadow:0 2px 10px rgba(58,107,71,.08)}
+.quiz.done .q{color:var(--green)}
+.quiz.done .qn{background:var(--green)}
 .quiz .q{font-size:14.5px;font-weight:600;margin-bottom:10px}
 .quiz .qn{display:inline-block;background:var(--blue);color:#fff;border-radius:6px;font-size:11px;padding:2px 8px;margin-right:8px;vertical-align:2px}
 .quiz .opt{display:block;width:100%;text-align:left;background:transparent;border:1px solid var(--line);border-radius:9px;padding:8px 12px;font-size:13.5px;cursor:pointer;margin:5px 0;font-family:inherit;transition:.15s}
@@ -248,7 +250,11 @@ pre.code .lang{position:absolute;top:8px;right:12px;font-size:10px;color:#777;le
 .hall-btn,.exam-btn{border:1px solid var(--line);background:var(--card);border-radius:980px;padding:7px 14px;font-size:12.5px;cursor:pointer;font-family:inherit;transition:.15s}
 .hall-btn.on,.exam-btn.on{background:var(--blue);color:#fff;border-color:var(--blue)}
 .hall-btn .n{font-size:10.5px;opacity:.7;margin-left:4px}
-.hall-done-tag{font-size:11px;color:var(--green);margin-left:8px}
+.hall-done-tag{font-size:11px;color:var(--green);border:1px solid var(--green);border-radius:980px;padding:1px 8px;margin-left:8px;font-weight:600;background:rgba(58,107,71,.06)}
+.ch-card.done{border-color:var(--green);background:linear-gradient(135deg,#f0f7ee,#fbf6ea);box-shadow:0 0 0 1.5px var(--green), 0 3px 12px rgba(58,107,71,.15)}
+.ch-card.done .no{color:var(--green)}
+.ch-card.done .t{color:var(--green)}
+.ch-card.done .st{color:var(--green);font-weight:600}
 /* ===== 错题本 ===== */
 .wrong-item{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;background:var(--card)}
 .wrong-item .wq{font-size:14px;font-weight:600;margin-bottom:8px}
@@ -892,7 +898,7 @@ var CHAPTERS = [
     {type:'choice', q:'检测子弹和外星人碰撞常用？', options:['pygame.sprite.groupcollide','pygame.collision.check','pygame.overlap.detect','pygame.hit.test'], answer:0, explain:'groupcollide 对两个精灵组做碰撞检测，还可以自动删除撞上的对象。'},
     {type:'code', q:'用 random 模块生成一个 1 到 1200 的随机整数（外星人的 x 坐标）', code:'import random\nx = random.randint(1, 1200)\nprint(x)', expect:'', hint:'random.randint(1, 1200)，输出是随机的，判题只检查无报错。'},
     {type:'choice', q:'控制帧率的代码是？', options:['clock.tick(60)','screen.fps(60)','time.limit(60)','pygame.fps(60)'], answer:0, explain:'clock.tick(60) 让循环每秒最多跑 60 次，游戏速度稳定。'}
-  ],
+  ,{type:'choice', q:'pygame.Surface 的 get_rect() 方法返回？', options:['矩形区域 Rect','坐标元组','图像列表','颜色值'], answer:0, explain:'get_rect() 返回一个 Rect 对象，包含位置和大小，用于定位和碰撞。'},{type:'code', q:'模拟飞船移动：x = 0，每帧 +1.5，跑 10 帧后打印 x', code:'x = 0\nfor i in range(10):\n    x += 1.5\nprint(x)', expect:'15.0', hint:'循环 10 次累加 1.5。'},{type:'choice', q:'精灵组 group 的 draw(screen) 方法作用是？', options:['把所有精灵画到屏幕','删除所有精灵','移动所有精灵','检测碰撞'], answer:0, explain:'draw 遍历组里所有精灵，把它们的图像画到指定屏幕。'},{type:'code', q:'模拟外星人舰队：生成 5 个外星人的 x 坐标（0, 60, 120, 180, 240）存列表并打印', code:'xs = [i * 60 for i in range(5)]\nprint(xs)', expect:'[0, 60, 120, 180, 240]', hint:'推导式 i*60。'}],
   dialogue:{q:'为什么游戏主循环要把「处理事件、更新状态、绘制画面」严格分开成三步？',
     keys:['顺序','稳定','事件','更新','绘制','分离','节奏','不卡'],
     model:'因为游戏是「每帧都要完整走一遍」的：不管玩家按没按键，画面都要刷新。如果把事件处理、状态更新、绘制混在一起，就会出现在一个循环里既要读输入又要画图，逻辑乱、帧率也不稳定。分开三步，每帧的节奏恒定：先听指令、再算变化、最后呈现。这也是程序设计的通用原则：职责分离，每段代码只做一件事。'}
@@ -901,7 +907,7 @@ var CHAPTERS = [
     {type:'choice', q:'pygame.display.flip() 的作用是？', options:['刷新屏幕显示','关闭窗口','初始化模块','播放音效'], answer:0, explain:'flip 把缓冲区的内容显示到屏幕，每帧调用一次。'},
     {type:'code', q:'模拟记分：初始 score = 0，每消灭一个外星人 +5 分，消灭 3 个后输出 score', code:'score = 0\nfor alien in range(3):\n    score += 5\nprint(score)', expect:'15', hint:'循环 3 次每次 +5。'},
     {type:'choice', q:'pygame.QUIT 事件在什么情况下触发？', options:['玩家点窗口关闭按钮','游戏开始时','按任意键时','程序崩溃时'], answer:0, explain:'玩家关闭窗口时产生 QUIT 事件，游戏应捕获并退出循环。'}
-  ]
+  ,{type:'choice', q:'clock.tick(60) 的作用是？', options:['控制游戏帧率约每秒 60 帧','让游戏暂停 60 秒','设置窗口大小','加速游戏'], answer:0, explain:'tick(60) 让主循环每秒最多执行 60 次。'},{type:'code', q:'模拟记分：写函数 add_score(score, points) 返回新分数，调用并打印', code:'def add_score(score, points):\n    return score + points\nprint(add_score(10, 5))', expect:'15', hint:'函数返回两数之和。'},{type:'choice', q:'pygame.key.get_pressed() 返回的是？', options:['所有按键的当前状态','按下的第一个键','键的名称','键的数量'], answer:0, explain:'get_pressed() 返回所有键的布尔状态，适合持续按住移动。'}]
 },
 {
   id:13, no:'ⅩⅢ', title:'项目二：数据可视化', weeks:'第 15-17 周', diff:'★★★★★', full:true,
@@ -935,7 +941,7 @@ var CHAPTERS = [
     {type:'code', q:'用列表推导式生成 1 到 5 的平方，打印列表', code:'squares = [n**2 for n in range(1, 6)]\nprint(squares)', expect:'[1, 4, 9, 16, 25]', hint:'推导式：[表达式 for 变量 in 序列]。'},
     {type:'choice', q:'读取 CSV 文件用哪个模块？', options:['csv','table','data','excel'], answer:0, explain:'csv 模块处理逗号分隔值文件。'},
     {type:'code', q:'计算列表 [3, 1, 4, 1, 5] 的平均值（用 sum 和 len）', code:'nums = [3, 1, 4, 1, 5]\nprint(sum(nums) / len(nums))', expect:'2.8', hint:'平均值 = 总和 ÷ 个数，sum 和 len。'}
-  ],
+  ,{type:'choice', q:'plt.scatter(x, y) 绘制的是？', options:['散点图','折线图','柱状图','饼图'], answer:0, explain:'scatter 绘制散点，适合看分布和相关性。'},{type:'code', q:'模拟随机游走一步：x = 0，随机加 1 或减 1（用 random 模块），打印 x', code:'import random\nx = 0\nx += random.choice([-1, 1])\nprint(x)', expect:'', hint:'choice 从列表随机选，输出随机。'},{type:'choice', q:'Plotly 图表相比 Matplotlib 的优势是？', options:['交互式（可缩放悬停）','只能画折线','离线可用','速度更快'], answer:0, explain:'Plotly 生成交互式图表，鼠标可缩放、悬停看数值。'},{type:'code', q:'模拟掷骰子 100 次，统计点数为 6 出现多少次（用 count）', code:'import random\nresults = [random.randint(1, 6) for i in range(100)]\nprint(results.count(6))', expect:'', hint:'列表推导生成 100 次结果，count(6) 数出现次数。'}],
   dialogue:{q:'为什么说「一图胜千言」对数据分析特别重要？',
     keys:['趋势','直观','比较','发现','规律','异常','理解','传达'],
     model:'数据是一堆数字，人脑不擅长处理数字，但极擅长看图。一万行数字里藏着「逐年上升」的趋势，肉眼根本看不出来；画成折线图，一眼的事。更重要的是发现异常：图上突兀的一个尖峰，就是数据里的「反常」，可能是错误也可能是重大发现。可视化不是把数据画漂亮，而是把数据变成人能理解的语言——这也是佩奇做 Google 的核心理念：把信息组织成人能用的形式。'}
@@ -944,7 +950,7 @@ var CHAPTERS = [
     {type:'choice', q:'散点图适合展示？', options:['两个变量的相关性分布','单一数值的变化趋势','分类对比','时间序列'], answer:0, explain:'散点图每个点是一对值，能看出相关性和分布形态。'},
     {type:'code', q:'模拟掷两个骰子 10 次，输出每次的点数和（循环累加打印总和）', code:'from random import randint\ntotal = 0\nfor _ in range(10):\n    total += randint(1, 6) + randint(1, 6)\nprint(total)', expect:'', hint:'两个 randint 相加，循环 10 次累加，输出随机。'},
     {type:'choice', q:'requests.get(url).json() 返回的是？', options:['解析后的 Python 数据（字典/列表）','网页的 HTML','JSON 字符串','图片'], answer:0, explain:'json() 方法把 API 返回的 JSON 文本解析成 Python 字典或列表。'}
-  ]
+  ,{type:'choice', q:'拿到新数据后，可视化的第一步通常是？', options:['先理解数据结构','直接画图','删除数据','放大坐标'], answer:0, explain:'先看清数据长什么样（表头、类型、范围），再决定怎么画。'},{type:'code', q:'生成 0 到 9 的列表并打印', code:'nums = list(range(10))\nprint(nums)', expect:'[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]', hint:'range(10) 转列表。'},{type:'choice', q:'requests 请求后把响应解析成 Python 数据用？', options:['response.json()','response.text()','response.data()','response.parse()'], answer:0, explain:'json() 方法解析 JSON 响应为字典或列表。'}]
 },
 {
   id:14, no:'ⅩⅣ', title:'项目三：Web 应用程序', weeks:'第 18-20 周', diff:'★★★★★', full:true,
@@ -978,7 +984,7 @@ var CHAPTERS = [
     {type:'choice', q:'数据库迁移要依次执行哪两条命令？', options:['makemigrations 再 migrate','migrate 再 makemigrations','startproject 再 runserver','collectstatic 再 migrate'], answer:0, explain:'先 makemigrations 生成迁移文件，再 migrate 应用到数据库。'},
     {type:'code', q:'模拟模板循环：用 f-string 生成列表 ["Item 1", "Item 2", "Item 3"]', code:'items = [f"Item {i}" for i in range(1, 4)]\nprint(items)', expect:'["Item 1", "Item 2", "Item 3"]', hint:'f-string 里放循环变量。'},
     {type:'choice', q:'启动 Django 开发服务器的命令？', options:['python manage.py runserver','python server.py','django run','manage.py start'], answer:0, explain:'runserver 启动本地开发服务器，默认 8000 端口。'}
-  ],
+  ,{type:'choice', q:'Django 视图函数返回给浏览器的是？', options:['HttpResponse 或渲染的页面','纯字符串','Python 字典','数据库记录'], answer:0, explain:'视图最终返回 HttpResponse，render 就是生成带模板的响应。'},{type:'code', q:'模拟模板渲染：user = {"name": "Ada"}，用 f-string 输出 欢迎，Ada！', code:'user = {"name": "Ada"}\nprint(f"欢迎，{user["name"]}！")', expect:'欢迎，Ada！', hint:'字典取值 user["name"]。'},{type:'choice', q:'Django 自带用户注册用的表单类是？', options:['UserCreationForm','LoginForm','RegisterForm','AccountForm'], answer:0, explain:'UserCreationForm 是 Django 内置的注册表单。'},{type:'code', q:'模拟登录权限：is_logged = True，登录则输出 欢迎回来，否则输出 请先登录', code:'is_logged = True\nif is_logged:\n    print("欢迎回来")\nelse:\n    print("请先登录")', expect:'欢迎回来', hint:'if-else 判断布尔值。'}],
   dialogue:{q:'「前端后端分离」是什么意思？为什么现代网站都这么做？',
     keys:['前端','展示','后端','数据','逻辑','接口','分工','独立'],
     model:'前端是用户看到和操作的部分（页面样式、交互），后端是服务器上处理数据和逻辑的部分（存取数据库、权限、计算）。分离就是：后端只提供数据接口（API），前端只负责展示和交互。好处：分工清晰、各自独立升级、同一套后端可以同时服务网页和手机 App。Django 的传统模式（模板渲染）是前后端一体，API 模式是分离——先学一体的好入门，理解分离是方向。'}
@@ -987,7 +993,7 @@ var CHAPTERS = [
     {type:'choice', q:'Django 中「一个类对应数据库一张表」的概念是？', options:['模型 Model','视图 View','模板 Template','路由 URL'], answer:0, explain:'Model 定义数据结构，Django 自动建表。'},
     {type:'code', q:'模拟用户数据归属：写函数 is_owner(user, owner) 返回用户是否是该数据的拥有者，输出结果', code:'def is_owner(user, owner):\n    return user == owner\n\nprint(is_owner("alice", "alice"))\nprint(is_owner("bob", "alice"))', expect:'True\nFalse', hint:'== 比较两个字符串。'},
     {type:'choice', q:'部署网站前必须把 DEBUG 设置成？', options:['False','True','None','0'], answer:0, explain:'DEBUG=False 后出错不泄露内部信息，是上线安全底线。'}
-  ]
+  ,{type:'choice', q:'settings.py 里 ALLOWED_HOSTS 的作用是？', options:['允许访问的域名白名单','允许的用户列表','数据库地址','端口号'], answer:0, explain:'部署时列出允许访问的域名，防止恶意 Host 攻击。'},{type:'code', q:'模拟路由映射：字典 urls = {"/": "index", "/topics/": "topics"}，输出 "/topics/" 对应的值', code:'urls = {"/": "index", "/topics/": "topics"}\nprint(urls["/topics/"])', expect:'topics', hint:'字典按键取值。'},{type:'choice', q:'Django 模板里循环列表的语法是？', options:['{% for item in list %} ... {% endfor %}','{{ for item in list }}','<% loop item %>','#for item#'], answer:0, explain:'模板循环用 {% for %} 块，结束用 {% endfor %}。'}]
 }
 ];
 
@@ -1240,10 +1246,11 @@ function toggleLesson(k){
 function chIsDone(c){return chDone.indexOf(c.id)>-1}
 function chQuizDone(c){return c.quiz?c.quiz.filter(function(q,i){return quizStat[c.id+'_'+i]!==undefined}).length:0}
 function renderChSelect(){
-  var h='<div class="page-head">📖 课程讲义</div><div class="page-sub">'+CHAPTERS.length+' 章课程体系 · 前 8 章讲义已就位，项目章节陆续补全</div><div class="ch-grid">';
+  var h='<div class="page-head">📖 课程讲义</div><div class="page-sub">'+CHAPTERS.length+' 章课程体系 · 全部讲义已就位</div><div class="ch-grid">';
   CHAPTERS.forEach(function(c){
+    var done = chIsDone(c);
     var st = c.full ? '🎓 讲义已就位（'+chQuizDone(c)+'/'+(c.quiz?c.quiz.length:0)+' 题）' : '📚 待佩奇开讲';
-    h+='<div class="ch-card" onclick="openCh('+c.id+')"><div class="no">'+c.no+' · '+c.weeks+'</div><div class="t">'+c.title+'</div><div class="meta"><span>难度 '+c.diff+'</span><span>'+c.map.length+' 个知识点</span></div><span class="st '+(c.full?'full':'wait')+'">'+st+'</span></div>';
+    h+='<div class="ch-card'+(done?' done':'')+'" onclick="openCh('+c.id+')"><div class="no">'+c.no+' · '+c.weeks+(done?' ✓':'')+'</div><div class="t">'+c.title+'</div><div class="meta"><span>难度 '+c.diff+'</span><span>'+c.map.length+' 个知识点</span></div><span class="st '+(c.full?'full':'wait')+'">'+(done?'✅ 已学完':st)+'</span></div>';
   });
   h+='</div>';
   $('#page-lesson').innerHTML=h;
@@ -1559,7 +1566,8 @@ function renderExam(id){
   var html='<button class="btn-back" onclick="renderExamNav()">← 全部章节</button><div class="page-head">📝 '+c.no+' 章考试 · '+c.title+'</div><div class="page-sub">'+c.exam.length+' 题 · 答完即批</div>';
   c.exam.forEach(function(q,i){
     var key='ex_'+c.id+'_'+i;
-    html+='<div class="quiz" id="e_'+key+'"><div class="q"><span class="qn">E'+(i+1)+'</span>'+q.q+'</div>';
+    var edone = hallDone[key] !== undefined;
+    html+='<div class="quiz'+(edone?' done':'')+'" id="e_'+key+'"><div class="q"><span class="qn">E'+(i+1)+'</span>'+q.q+(edone?'<span class="hall-done-tag">✓ 已通过</span>':'')+'</div>';
     if(q.type==='code'){
       var starter3 = q.start ? q.start : '# 在下方编写代码\n# 运行后与期望输出比对';
       html+='<div class="codebox" data-key="'+key+'"'+(q.expect?' data-expect="'+esc(q.expect)+'"':'')+'>'+'<div class="cb-head"><span class="lb">✏️ 写代码</span>'+(q.expect?'<span class="lb">期望：'+esc(q.expect.split('|').join(' 或 '))+'</span>':'')+'</div><textarea class="cm-target" spellcheck="false" data-starter="'+esc(starter3)+'">'+esc(starter3)+'</textarea><div class="cb-foot"><button class="run" onclick="runCode(this)">▶ 运行</button><button class="see-ans" onclick="showAns(this)" data-ans="'+esc(q.code||'')+'">👁 查看答案</button><div class="cout"></div></div><div class="vrd"></div></div></div>';
