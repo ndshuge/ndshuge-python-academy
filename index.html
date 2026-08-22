@@ -154,6 +154,7 @@ body{
 .login-logo{width:64px; height:64px; border-radius:50%; margin:0 auto; background:linear-gradient(135deg,#537D96,#3F6179); display:flex; align-items:center; justify-content:center; font-size:30px; box-shadow:0 6px 18px rgba(83,125,150,.35)}
 .login-title{font-size:20px; font-weight:700; font-family:Georgia,'Songti SC',serif; color:var(--ink)}
 .login-sub{font-size:12.5px; color:var(--muted); margin-bottom:6px}
+.login-share{font-size:11.5px; color:#2c5480; background:linear-gradient(90deg,rgba(59,110,165,.16),rgba(83,125,150,.08)); border:1px solid rgba(59,110,165,.45); border-radius:8px; padding:8px 10px; line-height:1.55; text-align:center; font-weight:600}
 .login-actions{display:flex; gap:10px; margin-top:4px}
 .login-btn{flex:1; border:none; border-radius:10px; padding:11px; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; transition:.15s; background:var(--blue-bg); color:var(--blue); border:1px solid rgba(83,125,150,.3)}
 .login-btn:hover{background:rgba(83,125,150,.15)}
@@ -162,6 +163,16 @@ body{
 .login-btn.link{background:transparent; border:none; color:var(--muted); font-size:12px; font-weight:400; padding:4px 6px; flex:none; width:auto; text-decoration:underline; cursor:pointer}
 .login-btn.link:hover{color:var(--blue)}
 .login-forgot-row{display:flex; justify-content:space-between; align-items:center; min-height:20px}
+.login-warn{font-size:11px; color:#8a5b00; background:rgba(184,134,11,.14); border:1px solid rgba(184,134,11,.4); border-radius:8px; padding:7px 10px; line-height:1.5; text-align:left; font-weight:600}
+.login-hint{font-size:11px; color:var(--blue); background:rgba(83,125,150,.1); border:1px dashed rgba(83,125,150,.35); border-radius:8px; padding:7px 10px; line-height:1.5; text-align:left}
+/* ===== 游客模式 ===== */
+.guest-entry{display:flex; flex-direction:column; gap:6px; margin-top:2px}
+.guest-btn{border:1px dashed rgba(83,125,150,.55); background:rgba(83,125,150,.06); color:var(--blue); border-radius:10px; padding:9px; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:.15s}
+.guest-btn:hover{background:rgba(83,125,150,.16)}
+.guest-note{font-size:10.5px; color:#9a9288; line-height:1.6}
+.guest-bar{background:linear-gradient(90deg,#f5c542,#e8a020); color:#3a2b00; padding:11px 18px; font-size:13px; font-weight:600; text-align:center; cursor:pointer; z-index:60; position:relative; line-height:1.6}
+.guest-bar:hover{filter:brightness(1.05)}
+.guest-bar b{text-decoration:underline}
 .login-msg{font-size:12px; min-height:18px; color:#8B2C1F}
 .login-tip{font-size:11px; color:#9a9288; line-height:1.7; background:rgba(43,37,29,.04); border-radius:8px; padding:9px 11px}
 /* ===== 登录 v2（用户名 + 头像）===== */
@@ -213,6 +224,17 @@ body{
 .fb-text2{font-size:12.5px; color:var(--ink2); line-height:1.65; margin-top:3px; white-space:pre-wrap; word-break:break-word}
 .fb-empty{text-align:center; color:#9a9288; font-size:12.5px; padding:18px 0; line-height:1.8}
 .fb-count{font-size:10.5px; color:#9a9288; text-align:center}
+/* ===== 分享弹窗 ===== */
+.share-intro{font-size:12.5px; color:var(--ink2); margin-bottom:6px}
+.share-item{border:1px solid rgba(43,37,29,.1); border-radius:12px; padding:12px; margin-bottom:10px; background:#fff}
+.share-name{font-size:13.5px; font-weight:700; color:var(--ink); margin-bottom:8px}
+.share-row{display:flex; gap:8px; margin-bottom:6px; align-items:center}
+.share-label{font-size:11px; color:var(--muted); flex:none; width:66px}
+.share-inp{flex:1; min-width:0; border:1px solid var(--line); background:rgba(43,37,29,.03); border-radius:8px; padding:8px 10px; font-size:12px; color:var(--ink2); font-family:Consolas,monospace; outline:none}
+.share-copy{border:1px solid rgba(59,110,165,.4); background:#fff; color:#2C5480; border-radius:8px; padding:7px 14px; font-family:inherit; font-size:12px; font-weight:600; cursor:pointer; flex:none; transition:.15s}
+.share-copy:hover{background:rgba(59,110,165,.1)}
+.share-copy.done{background:#e8f8ee; border-color:rgba(52,199,89,.5); color:#1d7a3f}
+.share-tip{font-size:11px; color:#9a9288; text-align:center; line-height:1.6}
 
 /* ===== 主区域 ===== */
 #main{flex:1;min-width:0;padding:36px 44px 80px;max-width:980px;margin:0 auto}
@@ -461,12 +483,13 @@ pre.code .lang{position:absolute;top:8px;right:12px;font-size:10px;color:#777;le
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/addon/hint/show-hint.min.css">
 </head>
 <body>
+<div id="guestBar" class="guest-bar" style="display:none" onclick="showLogin()">🎮 游客模式：数据保存在本浏览器，登录账号后自动并入进度；未登录不跨设备同步，清理浏览器数据可能丢失。点这里 <b>注册账号</b> 保存进度</div>
 <div id="app">
   <aside id="side">
     <button id="sideToggle" title="折叠/展开侧栏">«</button>
     <h1>🐭 鼠哥的 Python 学院 🐿️<small>PYTHON ACADEMY · 从入门到实践</small></h1>
     <div class="divider"></div>
-    <div id="userCard" class="user-card" onclick="openManageModal()">
+    <div id="userCard" class="user-card" onclick="userCardClick()">
       <div class="uc-ic">👤</div>
       <div>
         <div class="uc-name">未登录</div>
@@ -503,6 +526,7 @@ pre.code .lang{position:absolute;top:8px;right:12px;font-size:10px;color:#777;le
       <a class="com-btn" href="https://github.com/ndshuge/ndshuge-python-academy" target="_blank" rel="noopener"><span class="ic">📦</span>GitHub 仓库<span class="go">↗</span></a>
       <button class="com-btn" onclick="openRank()"><span class="ic">🏆</span>学习排行榜<span class="go">→</span></button>
       <button class="com-btn" onclick="openFeedback()"><span class="ic">💬</span>给作者留言<span class="go">→</span></button>
+      <button class="com-btn" onclick="openShare()"><span class="ic">📤</span>分享学院<span class="go">→</span></button>
     </div>
   </aside>
 
@@ -1356,13 +1380,13 @@ function renderHome(){
 
 /* ================= 学习计划 ================= */
 function renderPlan(){
-  var h='<div class="page-head">🗺️ 学习计划</div><div class="page-sub">11 周 · 五大战役 · 点课时勾选进度</div>';
+  var h='<div class="page-head">🗺️ 学习计划</div><div class="page-sub">11 周 · 五大战役 · 进度自动跟随学习（学到哪亮到哪）</div>';
   PLAN.forEach(function(w,wi){
     var dn = w.lessons.filter(function(l){return lessonsDone.indexOf(l.k)>-1}).length;
     h+='<div class="week'+(dn===w.lessons.length?' done':'')+'" id="week_'+wi+'"><div class="week-head"><span><span class="week-wk">'+w.wk+'</span> · <span class="week-title">'+w.title+'</span></span><span class="week-pct">'+dn+'/'+w.lessons.length+'</span></div>';
     w.lessons.forEach(function(l){
       var on = lessonsDone.indexOf(l.k)>-1;
-      h+='<div class="lesson-row'+(on?' on':'')+'" onclick="toggleLesson(\''+l.k+'\')"><span class="ck">'+(on?'✓':'')+'</span><span class="ln">'+l.k+'</span><span>'+l.t+'</span></div>';
+      h+='<div class="lesson-row'+(on?' on':'')+'" title="'+(on?'已学完':'未学')+'"><span class="ck">'+(on?'✓':'')+'</span><span class="ln">'+l.k+'</span><span>'+l.t+'</span></div>';
     });
     h+='</div>';
   });
@@ -1973,6 +1997,9 @@ function loginMode(up){
   var fg = document.getElementById('loginForgot'), bk = document.getElementById('loginBack');
   if(fg) fg.style.display = 'block';
   if(bk) bk.style.display = 'none';
+  var hi = document.getElementById('loginHint'), wa = document.getElementById('loginWarn');
+  if(hi) hi.style.display = 'block';
+  if(wa) wa.style.display = 'block';
   var msg = document.getElementById('loginMsg'); if(msg){ msg.textContent = ''; msg.style.color = '#8B2C1F'; }
   if(up) buildAvatarGrid();
 }
@@ -1991,6 +2018,9 @@ function showForgot(){
   var fg = document.getElementById('loginForgot'), bk = document.getElementById('loginBack');
   if(fg) fg.style.display = 'none';
   if(bk) bk.style.display = 'block';
+  var hi = document.getElementById('loginHint'), wa = document.getElementById('loginWarn');
+  if(hi) hi.style.display = 'none';
+  if(wa) wa.style.display = 'none';
   var msg = document.getElementById('loginMsg'); if(msg){ msg.textContent = ''; msg.style.color = '#8B2C1F'; }
 }
 function backToLogin(){ loginMode(false); }
@@ -2035,7 +2065,7 @@ function checkRecoveryHash(){
 }
 function showResetUI(){
   showLogin();
-  var ids = ['tabLogin','tabSignup','loginName','loginEmail','loginPass','avatarPick','avatarGrid','loginBtnMain','loginForgot','loginBack','loginMsg','loginTip'];
+  var ids = ['tabLogin','tabSignup','loginName','loginEmail','loginPass','avatarPick','avatarGrid','loginBtnMain','loginForgot','loginBack','loginMsg','loginTip','loginShare','guestEntry'];
   ids.forEach(function(id){ var el = document.getElementById(id); if(el) el.style.display = 'none'; });
   var rb = document.getElementById('resetBlock'); if(rb) rb.style.display = 'flex';
   rb.style.flexDirection = 'column';
@@ -2082,9 +2112,9 @@ function curProfile(){
   var s = sbSession();
   if(!s || !s.user) return null;
   var p = load('profile', null);
-  if(p && p.username) return p;
+  if(p && p.username && p.user_id === s.user.id) return p;
   var u = (s.user.email && s.user.email.split('@')[0]) || '同学';
-  return { username: u, avatar: '🦊' };
+  return { username: u, avatar: '🦊', user_id: s.user.id };
 }
 async function sbEnsureProfile(){
   var s = sbSession();
@@ -2094,7 +2124,7 @@ async function sbEnsureProfile(){
     var r = await fetch(SB_URL + '/rest/v1/profiles?select=username,avatar&user_id=eq.' + s.user.id, { headers:h });
     var rows = await r.json();
     if(rows && rows.length && rows[0].username){
-      store('profile', { username: rows[0].username, avatar: rows[0].avatar || '🦊' });
+      store('profile', { username: rows[0].username, avatar: rows[0].avatar || '🦊', user_id: s.user.id });
     } else {
       var p = curProfile();
       var body = { user_id: s.user.id, username: p.username, avatar: p.avatar };
@@ -2103,6 +2133,7 @@ async function sbEnsureProfile(){
         await fetch(SB_URL + '/rest/v1/profiles?user_id=eq.' + s.user.id, { method:'PATCH', headers:h, body: JSON.stringify({ username: p.username, avatar: p.avatar }) });
       }
     }
+    sbRefresh();
   }catch(e){}
 }
 /* ================= 云同步（Supabase，多设备进度对齐）================= */
@@ -2140,6 +2171,23 @@ function sbPack(){
     qstat: load('qstat', {}), wrong: load('wrong', []), fixed: load('fixed', []), log: load('log', [])
   };
 }
+/* ===== 游客模式 ===== */
+function enterGuest(){
+  store('guest', 1);
+  hideLogin();
+  showGuestBar();
+  sbRefresh();
+}
+function hintToggle(inp, id){ var el = document.getElementById(id); if(el) el.style.display = (inp.value.trim()) ? 'none' : 'block'; }
+function showGuestBar(){
+  var b = document.getElementById('guestBar');
+  if(b) b.style.display = 'block';
+}
+function hideGuestBar(){
+  var b = document.getElementById('guestBar');
+  if(b) b.style.display = 'none';
+}
+function userCardClick(){ if(load('guest', 0) && !sbSession()){ showLogin(); } else { openManageModal(); } }
 /* 合并两端进度：数组取并集去重，对象取键并集，不互相覆盖 */
 var MERGE_ARR = ['lessons','ch','wrong','fixed','log'];
 var MERGE_OBJ = ['hall','qstat'];
@@ -2150,6 +2198,13 @@ function loadAllProgress(){
 }
 function storeAllProgress(d){
   MERGE_ARR.concat(MERGE_OBJ).forEach(function(k){ if(d[k] !== undefined) store(k, d[k]); });
+}
+/* 取本学院在云端的数据：优先 python 键，兼容旧版平铺格式 */
+function myDataOf(d){
+  if(!d) return null;
+  if(d.python) return d.python;
+  if(d.lessons || d.ch || d.qstat || d.hall) return d;
+  return null;
 }
 function mergeProgress(local, cloud){
   var out = {};
@@ -2165,7 +2220,12 @@ function mergeProgress(local, cloud){
   MERGE_OBJ.forEach(function(k){
     var a = local[k] || {}, b = cloud[k] || {}, m = {};
     Object.keys(a).forEach(function(key){ m[key] = a[key]; });
-    Object.keys(b).forEach(function(key){ m[key] = b[key]; });
+    Object.keys(b).forEach(function(key){
+      // 任一设备做过/做对即保留（1 优先），后写不丢前写
+      if(a[key] === 1 || b[key] === 1) m[key] = 1;
+      else if(b[key] !== undefined) m[key] = b[key];
+      else if(a[key] !== undefined) m[key] = a[key];
+    });
     out[k] = m;
   });
   return out;
@@ -2202,8 +2262,10 @@ async function sbAuth(doSignup){
     var r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json', 'apikey': SB_KEY}, body: JSON.stringify(body) });
     var j = await r.json();
     if(j.access_token){
+      // 游客数据不丢弃：保留在本地，登录后由并集合并自动并入账号进度
+      if(load('guest', 0)){ store('guest', 0); hideGuestBar(); }
       store('sb_session', {access_token: j.access_token, refresh_token: j.refresh_token, user: j.user});
-      if(doSignup) store('profile', { username: uname, avatar: av });
+      if(doSignup) store('profile', { username: uname, avatar: av, user_id: j.user.id });
       msg.textContent = '';
       hideLogin();
       sbRefresh();
@@ -2217,6 +2279,7 @@ async function sbAuth(doSignup){
 }
 function sbLogout(){
   localStorage.removeItem('pyc_sb_session');
+  localStorage.removeItem('pyc_profile');
   sbRefresh();
   sbMsg('已退出登录');
   showLogin();
@@ -2230,16 +2293,18 @@ async function sbSyncFromCloud(){
     var r = await fetch(SB_URL + '/rest/v1/progress?select=data&user_id=eq.' + s.user.id, { headers:h });
     var rows = await r.json();
     if(rows && rows.length && rows[0].data){
-      var d = rows[0].data;
-      var merged = mergeProgress(loadAllProgress(), d);
-      storeAllProgress(merged);
-      sbMsg('✅ 已合并两端进度（取并集，不丢数据）', true);
-      renderProgress();
-      await sbPush(true);
-    } else {
-      await sbPush(true);
-      sbMsg('已把本地进度上传云端', true);
+      var d = myDataOf(rows[0].data);
+      if(d){
+        var merged = mergeProgress(loadAllProgress(), d);
+        storeAllProgress(merged);
+        sbMsg('✅ 已合并两端进度（取并集，不丢数据）', true);
+        renderProgress();
+        await sbPush(true);
+        return;
+      }
     }
+    await sbPush(true);
+    sbMsg('已把本地进度上传云端', true);
   }catch(e){ sbMsg('同步失败：' + e.message); }
 }
 var sbTimer = null;
@@ -2255,9 +2320,19 @@ async function sbPush(immediate){
   try{
     var h = sbAuthHeaders();
     var data = sbPack();
-    var body = { data: data, updated_at: new Date().toISOString() };
     var r = await fetch(SB_URL + '/rest/v1/progress?user_id=eq.' + s.user.id, { method:'GET', headers:h });
     var rows = await r.json();
+    var data2 = (rows && rows.length && rows[0].data) ? rows[0].data : {};
+    var cur = myDataOf(data2);
+    if(cur){
+      // 推送前先与云端本学院数据合并（防止覆盖另一台设备刚推的数据），且不动其他学院（calc 等）
+      var merged = mergeProgress(data, cur);
+      storeAllProgress(merged);
+      data2.python = merged;
+    } else {
+      data2.python = data;
+    }
+    var body = { data: data2, updated_at: new Date().toISOString() };
     if(rows && rows.length){
       await fetch(SB_URL + '/rest/v1/progress?user_id=eq.' + s.user.id, { method:'PATCH', headers:h, body: JSON.stringify(body) });
     } else {
@@ -2290,6 +2365,9 @@ function sbRefresh(){
         + '<div style="min-width:0"><div class="uc-name">' + esc(p.username) + '</div>'
         + '<div class="uc-mail">' + esc(s.user && s.user.email ? s.user.email : '') + '</div></div>';
       card.title = '管理账号与进度';
+    } else if(load('guest', 0)){
+      card.innerHTML = '<div class="uc-ic">🎮</div><div><div class="uc-name">游客模式</div><div class="uc-hint">点击登录 · 数据仅存本机</div></div>';
+      card.title = '登录';
     } else {
       card.innerHTML = '<div class="uc-ic">👤</div><div><div class="uc-name">未登录</div><div class="uc-hint">点击登录 · 管理账号与进度</div></div>';
       card.title = '登录';
@@ -2354,7 +2432,7 @@ async function saveUsername(){
     var r = await fetch(SB_URL + '/rest/v1/profiles?user_id=eq.' + s.user.id, { method:'PATCH', headers:h, body: JSON.stringify({ username: n }) });
     if(r.ok){
       var p = curProfile();
-      store('profile', { username: n, avatar: p.avatar });
+      store('profile', { username: n, avatar: p.avatar, user_id: s.user.id });
       accMsg2('✅ 用户名已更新', true);
       sbRefresh();
       sbPushRank(sbAuthHeaders(), s);
@@ -2369,7 +2447,7 @@ async function saveAvatar(){
     var r = await fetch(SB_URL + '/rest/v1/profiles?user_id=eq.' + s.user.id, { method:'PATCH', headers:h, body: JSON.stringify({ avatar: selAccAvatar }) });
     if(r.ok){
       var p = curProfile();
-      store('profile', { username: p.username, avatar: selAccAvatar });
+      store('profile', { username: p.username, avatar: selAccAvatar, user_id: s.user.id });
       accMsg2('✅ 头像已更新', true);
       sbRefresh();
       sbPushRank(sbAuthHeaders(), s);
@@ -2410,7 +2488,12 @@ async function savePass(){
 function sbInit(){
   var s = sbSession();
   sbRefresh();
-  if(!s){ showLogin(); return; }
+  if(!s){
+    if(!load('guest', 0)){ showLogin(); return; }
+    showGuestBar();
+    return;
+  }
+  hideGuestBar();
   sbEnsureToken().then(function(ok){
     if(!ok){ sbLogout(); showLogin(); return; }
     hideLogin();
@@ -2419,10 +2502,12 @@ function sbInit(){
       .then(function(r){ return r.json(); })
       .then(function(rows){
         if(rows && rows.length && rows[0].data){
-          var d = rows[0].data;
-          var merged = mergeProgress(loadAllProgress(), d);
-          storeAllProgress(merged);
-          renderProgress();
+          var d = myDataOf(rows[0].data);
+          if(d){
+            var merged = mergeProgress(loadAllProgress(), d);
+            storeAllProgress(merged);
+            renderProgress();
+          }
         }
       }).catch(function(){});
   });
@@ -2527,6 +2612,19 @@ function fmtTime(t){
   if(diff < 86400*7) return Math.floor(diff/86400) + ' 天前 · ' + dayStr;
   return dayStr;
 }
+/* ===== 分享 ===== */
+function openShare(){ document.getElementById('shareModal').style.display = 'flex'; }
+function closeShare(){ document.getElementById('shareModal').style.display = 'none'; }
+function copyShare(btn){
+  var inp = btn.previousElementSibling;
+  if(inp && inp.select) inp.select();
+  try{ document.execCommand('copy'); }catch(e){}
+  try{ if(inp && inp.value) navigator.clipboard.writeText(inp.value); }catch(e){}
+  var old = btn.textContent;
+  btn.textContent = '✓ 已复制';
+  btn.classList.add('done');
+  setTimeout(function(){ btn.textContent = old; btn.classList.remove('done'); }, 1500);
+}
 
 /* ================= 启动 ================= */
 renderNav();
@@ -2534,7 +2632,10 @@ go('home');
 renderProgress();
 renderPlan();
 renderHome();
-if(!checkRecoveryHash()){ sbInit(); }
+/* 登录初始化等 DOM 完全就绪后再执行（登录遮罩在 script 之后才解析，同步执行会找不到元素） */
+if(!checkRecoveryHash()){
+  document.addEventListener('DOMContentLoaded', sbInit);
+}
 /* 预加载 Python 运行时（后台静默加载） */
 if(!pyLoading) ensurePy();
 </script>
@@ -2544,13 +2645,16 @@ if(!pyLoading) ensurePy();
     <div class="login-logo">🐍</div>
     <div class="login-title">🐭 鼠哥的 Python 学院 🐿️</div>
     <div class="login-sub">登录后开始学习 · 进度多设备自动同步</div>
+    <div class="login-share">🔗 两个学院账号互通：一个账号，Python 学院和微积分学院通用，进度各自独立</div>
     <div class="login-tabs">
       <button class="login-tab on" id="tabLogin" onclick="loginMode(false)">登 录</button>
       <button class="login-tab" id="tabSignup" onclick="loginMode(true)">注 册</button>
     </div>
     <input id="loginName" class="sb-input" style="display:none" type="text" maxlength="16" placeholder="用户名（3~16 位，中文/字母/数字/下划线）" onkeydown="if(event.key==='Enter') loginDo()">
-    <input id="loginEmail" class="sb-input" type="email" placeholder="邮箱" onkeydown="if(event.key==='Enter') loginDo()">
-    <input id="loginPass" class="sb-input" type="password" placeholder="密码（至少 6 位）" onkeydown="if(event.key==='Enter') loginDo()">
+    <input id="loginEmail" class="sb-input" type="email" placeholder="邮箱" onkeydown="if(event.key==='Enter') loginDo()" oninput="hintToggle(this,'loginHint')">
+    <div class="login-hint" id="loginHint">📧 选一个常用邮箱，另外想一个好记的密码</div>
+    <input id="loginPass" class="sb-input" type="password" placeholder="密码（至少 6 位）" onkeydown="if(event.key==='Enter') loginDo()" oninput="hintToggle(this,'loginWarn')">
+    <div class="login-warn" id="loginWarn">⚠️ 密码不要设置和其他平台一样哦</div>
     <div class="avatar-pick" id="avatarPick" style="display:none">选一个头像</div>
     <div class="avatar-grid" id="avatarGrid" style="display:none"></div>
     <div class="login-actions">
@@ -2562,6 +2666,10 @@ if(!pyLoading) ensurePy();
     </div>
     <div id="loginMsg" class="login-msg"></div>
     <div class="login-tip" id="loginTip">第一次用点「注册」，之后自动登录。同一账号，手机电脑进度同步。</div>
+    <div class="guest-entry" id="guestEntry">
+      <button class="guest-btn" onclick="enterGuest()">🎮 先体验一下（游客模式）</button>
+      <div class="guest-note">游客数据保存在这台设备的浏览器里；登录或注册账号后会自动并入云端进度。未登录期间不跨设备同步，清理浏览器数据可能丢失。</div>
+    </div>
     <div id="resetBlock" style="display:none">
       <div class="login-title" style="font-size:16px; margin-top:2px">🔑 设置新密码</div>
       <div class="login-sub">为你的账号设置一个新密码</div>
@@ -2617,6 +2725,26 @@ if(!pyLoading) ensurePy();
       <div class="fb-count" id="fbCount"></div>
       <div class="fb-list" id="fbList"><div class="fb-empty">加载中…</div></div>
       <button class="modal-btn fb-more" id="fbMore" style="display:none" onclick="loadFeedback(false)">加载更多留言</button>
+    </div>
+  </div>
+</div>
+<!-- 分享弹窗 -->
+<div class="modal-mask" id="shareModal" style="display:none" onclick="closeShare()">
+  <div class="modal-card wide" onclick="event.stopPropagation()">
+    <div class="modal-head">📤 分享学院<button class="modal-x" onclick="closeShare()">✕</button></div>
+    <div class="modal-body">
+      <div class="share-intro">把学院分享给同学，一起学 🐭🐿️</div>
+      <div class="share-item">
+        <div class="share-name">🐍 Python 学院</div>
+        <div class="share-row"><span class="share-label">📖 学习链接</span><input class="share-inp" readonly value="https://ndshuge.github.io/ndshuge-python-academy/" onclick="this.select()"><button class="share-copy" onclick="copyShare(this)">复制</button></div>
+        <div class="share-row"><span class="share-label">📦 仓库</span><input class="share-inp" readonly value="https://github.com/ndshuge/ndshuge-python-academy" onclick="this.select()"><button class="share-copy" onclick="copyShare(this)">复制</button></div>
+      </div>
+      <div class="share-item">
+        <div class="share-name">🧮 微积分学院</div>
+        <div class="share-row"><span class="share-label">📖 学习链接</span><input class="share-inp" readonly value="https://ndshuge.github.io/ndshuge-calculus-academy/" onclick="this.select()"><button class="share-copy" onclick="copyShare(this)">复制</button></div>
+        <div class="share-row"><span class="share-label">📦 仓库</span><input class="share-inp" readonly value="https://github.com/ndshuge/ndshuge-calculus-academy" onclick="this.select()"><button class="share-copy" onclick="copyShare(this)">复制</button></div>
+      </div>
+      <div class="share-tip">两个学院账号互通：注册一个账号，两个学院都能用，进度各自独立。</div>
     </div>
   </div>
 </div>
