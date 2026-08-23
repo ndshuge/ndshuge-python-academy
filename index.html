@@ -1158,6 +1158,77 @@ function saveLessons(){store('lessons', lessonsDone)}
 function saveQuiz(){store('qstat', quizStat); store('hall', hallDone); store('wrong', wrongPool); store('fixed', fixedPool); store('log', studyLog)}
 
 function logStudy(txt){studyLog.push({t:Date.now(), x:txt}); if(studyLog.length>3000) studyLog=studyLog.slice(-3000); store('log', studyLog)}
+/* ===== 统一学习记录：一课/一卷一条（30 分钟内同课连续做题自动合并）===== */
+function sessionAcc(qs){
+  var c2 = 0, n = 0;
+  qs.forEach(function(k){ var v = quizStat[k]; if(v !== undefined){ n++; if(v === 1) c2++; } });
+  return n ? Math.round(c2/n*100) : null;
+}
+function sessionLog(ty, c, key, ok){
+  var now = Date.now();
+  var last = studyLog.length ? studyLog[studyLog.length-1] : null;
+  if(last && last.questions && last.ty === ty && last.ch === c.id && (now - last.end) < 30*60*1000){
+    if(last.questions.indexOf(key) === -1) last.questions.push(key);
+    last.end = now; last.ms = last.end - last.start;
+    last.acc = sessionAcc(last.questions);
+  } else {
+    studyLog.push({ ty: ty, ch: c.id, title: c.title, questions: [key], start: now, end: now, ms: 0, acc: null });
+    if(studyLog.length > 3000) studyLog = studyLog.slice(-3000);
+  }
+  store('log', studyLog);
+}
+
+/* ===== 统计体系 v2（与微积分学院对齐）：题数做一题+1 / 时长只算做题界面 / 正确率=对÷总 ===== */
+function fmtDurCn(sec){
+  if(sec < 60) return Math.round(sec) + '秒';
+  if(sec < 3600) return Math.round(sec/60) + '分';
+  return Math.floor(sec/3600) + '时' + Math.round((sec%3600)/60) + '分';
+}
+var stat = load('stat', null);
+function statTodayKey(){ return new Date().toDateString(); }
+function initStat(){
+  var k = statTodayKey();
+  if(!stat || stat.day !== k){
+    var base = stat || {};
+    stat = { totalQ: base.totalQ || 0, totalCorrect: base.totalCorrect || 0, totalMs: base.totalMs || 0, todayQ: 0, todayCorrect: 0, todayMs: 0, todayReal: 0, accQ: 0, accC: 0, day: k };
+  }
+  if(!stat._migrated){
+    // 真实数据：按题去重的做题记录（quizStat）
+    var qkeys = Object.keys(quizStat || {});
+    stat.totalQ = qkeys.length;
+    stat.accQ = qkeys.length;
+    var cc = 0; qkeys.forEach(function(kk){ if(quizStat[kk] === 1) cc++; });
+    stat.accC = cc;
+    stat.totalCorrect = cc;
+    stat._migrated = true;
+  }
+  // 今日题数/时长从启用时刻起真实累计，不迁移历史（历史无法真实恢复）
+  storeStat();
+}function storeStat(){ store('stat', stat); }
+function statRecordQ(ok){
+  if(!stat) return;
+  stat.totalQ++; stat.todayQ++; stat.todayReal++;
+  stat.accQ++; if(ok) stat.accC++;
+  if(ok){ stat.totalCorrect++; stat.todayCorrect++; }
+  storeStat();
+}
+var studyTimerStart = null;
+function studyTimerEnter(){ if(studyTimerStart === null) studyTimerStart = Date.now(); }
+function studyTimerLeave(){
+  if(studyTimerStart !== null){
+    var ms = Date.now() - studyTimerStart;
+    if(stat){ stat.totalMs += ms; stat.todayMs += ms; storeStat(); }
+    studyTimerStart = null;
+  }
+}
+function fmtMs(ms){
+  if(!ms) return '0秒';
+  var s = Math.round(ms/1000);
+  if(s < 60) return s + '秒';
+  if(s < 3600) return Math.round(s/60) + '分钟';
+  return Math.floor(s/3600) + '时' + Math.round((s%3600)/60) + '分';
+}
+
 /* 学习记录按课/按卷：整章练习完成记一课，整卷满分记一卷（防重复） */
 function logLessonDone(c){
   if(!c.quiz || !c.quiz.length) return;
@@ -1221,6 +1292,8 @@ function renderNav(){
 }
 function go(p){
   if(p==='manage'){ openManageModal(); return; }
+  studyTimerLeave();
+  if(p==='lesson' || p==='hall' || p==='exam') studyTimerEnter();
   curPage=p;
   document.querySelectorAll('.page').forEach(function(el){el.classList.remove('on')});
   $('#page-'+p).classList.add('on');
@@ -1361,17 +1434,30 @@ function renderProgress(){
     return '<div class="subrow" title="'+x.tip+'"><span class="st">'+x.t+'</span><div class="sbar"><i style="width:'+p+'%"></i></div><span class="sv">'+txt+'</span></div>';
   }).join('');
   renderStats();
-  logStudyTick();
   sbNotify();
 }
 function renderStats(){
-  var t = totalDone(), all = PLAN.reduce(function(a,w){return a+w.lessons.length},0);
-  var got = badgeStatus().filter(function(x){return x.got}).length;
-  var wrong = wrongPool.length, fixed = fixedPool.length;
-  $('#statsGrid').innerHTML = [
-    ['课时', t+'/'+all], ['徽章', got+'/'+BADGES.length], ['错题', wrong], ['已订正', fixed], ['足迹', studyLog.length], ['周测', Object.keys(hallDone).length]
-  ].map(function(x){return '<div class="stat"><div class="sv">'+x[1]+'</div><div class="sl">'+x[0]+'</div></div>'}).join('');
-  renderQuote();
+  if(!stat) initStat();
+  var box = $('#statsGrid'); if(!box) return;
+  var t0 = new Date(); t0.setHours(0,0,0,0);
+  var dayCh = {};
+  studyLog.forEach(function(s2){
+    if(s2 && s2.start && s2.start >= t0.getTime()) dayCh[s2.ch] = 1;
+  });
+  var acc = stat.accQ ? Math.round(stat.accC/stat.accQ*100) : null;
+  var dayAcc = stat.todayReal ? Math.round(stat.todayCorrect/stat.todayReal*100) : null;
+  var cells = [
+    ['累计时长', fmtDurCn(stat.totalMs/1000)],
+    ['累计题数', stat.totalQ],
+    ['正确率', acc===null ? '—' : acc+'%'],
+    ['今日章节', Object.keys(dayCh).length],
+    ['今日题数', stat.todayQ],
+    ['今日时长', fmtDurCn(stat.todayMs/1000)],
+    ['今日正确率', dayAcc===null ? '—' : dayAcc+'%']
+  ];
+  $('#statsGrid').innerHTML = cells.map(function(x){
+    return '<div class="stat"><div class="sv">'+x[1]+'</div><div class="sl">'+x[0]+'</div></div>';
+  }).join('');
 }
 function renderQuote(){
   var el=document.getElementById('quote');
@@ -1519,13 +1605,17 @@ function checkChoice(btn){
     fb.textContent = RIGHT_CM[Math.floor(Math.random()*RIGHT_CM.length)];
     fb.className = 'fb show ok';
     quiz.classList.add('done');
-    if(quizStat[key]===undefined){ quizStat[key]=1; }
+    if(quizStat[key]!==1){ quizStat[key]=1; }
+    sessionLog('lesson', c, key, true);
+    statRecordQ(true);
     var wp=wrongPool.indexOf(key);
     if(wp>-1){ wrongPool.splice(wp,1); if(fixedPool.indexOf(key)<0) fixedPool.push(key); logStudy('错题 '+c.no+' Q'+(idx[1]+1)+' 已订正'); }
   } else {
     fb.textContent = WRONG_CM[Math.floor(Math.random()*WRONG_CM.length)]+'（错题已收进错题本）';
     fb.className = 'fb show no';
     if(wrongPool.indexOf(key)<0) wrongPool.push(key);
+    quizStat[key]=0; sessionLog('lesson', c, key, false);
+    statRecordQ(false);
   }
   quiz.querySelector('.explain').classList.add('show');
   saveQuiz(); renderProgress();
@@ -1765,6 +1855,8 @@ function checkExam(btn){
   fb.textContent = ok ? '✓ 考试题通过！' : '✗ 错了。考试题不记错题本，看解析后重做一遍。';
   fb.className='fb show '+(ok?'ok':'no');
   quiz.querySelector('.explain').classList.add('show');
+  quizStat[key]=ok?1:0; sessionLog('exam', c, key, ok);
+  statRecordQ(ok);
   if(ok){ hallDone[key]=1; quiz.classList.add('done'); saveQuiz(); renderProgress(); }
 }
 
@@ -1802,12 +1894,22 @@ function renderFixed(){
 
 /* ================= 学习足迹 ================= */
 function renderTrace(){
-  var html='<div class="page-head">👣 学习足迹</div><div class="page-sub">每次作答与订正的记录（最多 200 条）</div>';
+  var html='<div class="page-head">👣 学习足迹</div><div class="page-sub">学习会话：一课/一卷一条，含题目数、正确率、用时</div>';
   if(!studyLog.length){ html+='<div class="card"><div class="about-sec">还没有足迹。做完第一道题，这里就会出现记录。</div></div>'; $('#page-trace').innerHTML=html; return; }
   html+=studyLog.slice().reverse().map(function(e){
-    var d=new Date(e.t);
-    var ds=d.getMonth()+1+'/'+d.getDate()+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
-    return '<div class="trace-item"><span class="td">'+ds+'</span><span class="tt">'+esc(e.x)+'</span></div>';
+    if(e.questions){
+      var d=new Date(e.start);
+      var ds=(d.getMonth()+1)+'/'+d.getDate()+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+      var d2=new Date(e.end);
+      var es=('0'+d2.getHours()).slice(-2)+':'+('0'+d2.getMinutes()).slice(-2);
+      var ic = e.ty==='exam' ? '📝' : '📖';
+      var accTxt = (e.acc===null||e.acc===undefined) ? '' : ' · 正确率 '+e.acc+'%';
+      var msTxt = ' · 用时 '+fmtMs(e.ms);
+      return '<div class="trace-item"><span class="td">'+ds+'</span><span class="tt">'+ic+' '+esc(e.title)+' · '+e.questions.length+' 题'+accTxt+msTxt+'<br><small style="color:var(--muted)">'+ds+' - '+es+'</small></span></div>';
+    }
+    var d3=new Date(e.t);
+    var ds3=d3.getMonth()+1+'/'+d3.getDate()+' '+('0'+d3.getHours()).slice(-2)+':'+('0'+d3.getMinutes()).slice(-2);
+    return '<div class="trace-item"><span class="td">'+ds3+'</span><span class="tt">'+esc(e.x)+'</span></div>';
   }).join('');
   $('#page-trace').innerHTML=html;
 }
@@ -2680,6 +2782,7 @@ go('home');
 renderProgress();
 renderPlan();
 renderHome();
+initStat();
 /* 登录初始化等 DOM 完全就绪后再执行（登录遮罩在 script 之后才解析，同步执行会找不到元素） */
 if(!checkRecoveryHash()){
   document.addEventListener('DOMContentLoaded', sbInit);
