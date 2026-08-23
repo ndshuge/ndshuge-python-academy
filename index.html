@@ -1158,6 +1158,22 @@ function saveLessons(){store('lessons', lessonsDone)}
 function saveQuiz(){store('qstat', quizStat); store('hall', hallDone); store('wrong', wrongPool); store('fixed', fixedPool); store('log', studyLog)}
 
 function logStudy(txt){studyLog.push({t:Date.now(), x:txt}); if(studyLog.length>200) studyLog=studyLog.slice(-200); store('log', studyLog)}
+/* 学习记录按课/按卷：整章练习完成记一课，整卷满分记一卷（防重复） */
+function logLessonDone(c){
+  if(!c.quiz || !c.quiz.length) return;
+  if(chQuizDone(c) < chQuizCount(c)) return;
+  if(studyLog.some(function(l){ return (''+l.x).indexOf('学完第') > -1 && (''+l.x).indexOf(c.no) > -1; })) return;
+  logStudy('📖 学完第 ' + c.no + ' 章「' + c.title + '」练习');
+}
+function logExamDone(c){
+  if(!c.exam || !c.exam.length) return;
+  var full = c.exam.every(function(q,i){ return hallDone['ex_'+c.id+'_'+i] !== undefined; });
+  if(!full) return;
+  if(studyLog.some(function(l){ return (''+l.x).indexOf('卷子') > -1 && (''+l.x).indexOf(c.no) > -1; })) return;
+  logStudy('📝 第 ' + c.no + ' 章卷子满分通过');
+}
+function logStudyTick(){ CHAPTERS.forEach(function(c){ logLessonDone(c); logExamDone(c); }); }
+
 
 /* ================= 导航 ================= */
 var NAV = [
@@ -1345,6 +1361,7 @@ function renderProgress(){
     return '<div class="subrow" title="'+x.tip+'"><span class="st">'+x.t+'</span><div class="sbar"><i style="width:'+p+'%"></i></div><span class="sv">'+txt+'</span></div>';
   }).join('');
   renderStats();
+  logStudyTick();
   sbNotify();
 }
 function renderStats(){
@@ -1502,7 +1519,7 @@ function checkChoice(btn){
     fb.textContent = RIGHT_CM[Math.floor(Math.random()*RIGHT_CM.length)];
     fb.className = 'fb show ok';
     quiz.classList.add('done');
-    if(quizStat[key]===undefined){ quizStat[key]=1; logStudy('章节 '+c.no+' Q'+(idx[1]+1)+' 答对'); }
+    if(quizStat[key]===undefined){ quizStat[key]=1; }
     var wp=wrongPool.indexOf(key);
     if(wp>-1){ wrongPool.splice(wp,1); if(fixedPool.indexOf(key)<0) fixedPool.push(key); logStudy('错题 '+c.no+' Q'+(idx[1]+1)+' 已订正'); }
   } else {
@@ -1668,7 +1685,6 @@ async function runCode(btn){
         if(key && quizStat[key]===undefined){
           quizStat[key]=1;
           var idx=key.split('_').map(Number);
-          logStudy('代码题 '+idx[0]+' Q'+(idx[1]+1)+' 通过');
           var qz=box.closest('.quiz'); if(qz) qz.classList.add('done');
           var wp=wrongPool.indexOf(key); if(wp>-1){wrongPool.splice(wp,1); if(fixedPool.indexOf(key)<0) fixedPool.push(key);}
           saveQuiz(); renderProgress();
@@ -1749,7 +1765,7 @@ function checkExam(btn){
   fb.textContent = ok ? '✓ 考试题通过！' : '✗ 错了。考试题不记错题本，看解析后重做一遍。';
   fb.className='fb show '+(ok?'ok':'no');
   quiz.querySelector('.explain').classList.add('show');
-  if(ok){ hallDone[key]=1; quiz.classList.add('done'); logStudy('考试 '+c.no+' E'+(i+1)+' 通过'); saveQuiz(); renderProgress(); }
+  if(ok){ hallDone[key]=1; quiz.classList.add('done'); saveQuiz(); renderProgress(); }
 }
 
 /* ================= 错题本 ================= */
@@ -2193,6 +2209,14 @@ function userCardClick(){ if(load('guest', 0) && !sbSession()){ showLogin(); } e
 /* 合并两端进度：数组取并集去重，对象取键并集，不互相覆盖 */
 var MERGE_ARR = ['lessons','ch','wrong','fixed','log'];
 var MERGE_OBJ = ['hall','qstat'];
+/* 类型清洗：把错误类型的数据重置为正确默认，防止污染传播（本地/云端都可能脏） */
+function sanitizeProgress(d){
+  var out = {};
+  if(!d || typeof d !== 'object') return out;
+  MERGE_ARR.forEach(function(k){ out[k] = Array.isArray(d[k]) ? d[k] : []; });
+  MERGE_OBJ.forEach(function(k){ var v = d[k]; out[k] = (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; });
+  return out;
+}
 function loadAllProgress(){
   var out = {};
   MERGE_ARR.concat(MERGE_OBJ).forEach(function(k){ out[k] = load(k, MERGE_OBJ.indexOf(k) >= 0 ? {} : []); });
@@ -2209,6 +2233,8 @@ function myDataOf(d){
   return null;
 }
 function mergeProgress(local, cloud){
+  local = sanitizeProgress(local);
+  cloud = sanitizeProgress(cloud);
   var out = {};
   MERGE_ARR.forEach(function(k){
     var a = local[k] || [], b = cloud[k] || [];
