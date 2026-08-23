@@ -1157,7 +1157,7 @@ var curCh = null;
 function saveLessons(){store('lessons', lessonsDone)}
 function saveQuiz(){store('qstat', quizStat); store('hall', hallDone); store('wrong', wrongPool); store('fixed', fixedPool); store('log', studyLog)}
 
-function logStudy(txt){studyLog.push({t:Date.now(), x:txt}); if(studyLog.length>200) studyLog=studyLog.slice(-200); store('log', studyLog)}
+function logStudy(txt){studyLog.push({t:Date.now(), x:txt}); if(studyLog.length>3000) studyLog=studyLog.slice(-3000); store('log', studyLog)}
 /* 学习记录按课/按卷：整章练习完成记一课，整卷满分记一卷（防重复） */
 function logLessonDone(c){
   if(!c.quiz || !c.quiz.length) return;
@@ -2224,6 +2224,14 @@ function loadAllProgress(){
 }
 function storeAllProgress(d){
   MERGE_ARR.concat(MERGE_OBJ).forEach(function(k){ if(d[k] !== undefined) store(k, d[k]); });
+  /* 同步内存变量：界面/统计用的是内存，不刷新会导致显示旧数据 */
+  if(d.lessons !== undefined) lessonsDone = d.lessons;
+  if(d.ch !== undefined) chDone = d.ch;
+  if(d.hall !== undefined) hallDone = d.hall;
+  if(d.qstat !== undefined) quizStat = d.qstat;
+  if(d.wrong !== undefined) wrongPool = d.wrong;
+  if(d.fixed !== undefined) fixedPool = d.fixed;
+  if(d.log !== undefined) studyLog = d.log;
 }
 /* 取本学院在云端的数据：优先 python 键，兼容旧版平铺格式 */
 function myDataOf(d){
