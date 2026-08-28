@@ -1811,16 +1811,16 @@ function toggleCmdMenuFromCM(cm){ var b=cmBox(cm); var m=b?b.querySelector('.cmd
 function toggleCmdMenu(btn){ var m=btn.closest('.codebox').querySelector('.cmd-menu'); m.classList.toggle('open'); }
 function cmdBox(el){ return el.closest('.codebox'); }
 function cmdRun(el){ var b=cmdBox(el); var btn=b.querySelector('.run'); if(btn) btn.click(); }
-function cmdAns(el){ var b=cmdBox(el); var btn=b.querySelector('.see-ans'); if(btn) btn.click(); else { var ta=b.querySelector('textarea'); if(ta&&ta.CodeMirror) ta.CodeMirror.setValue(b.dataset.ans||''); } }
-function cmdReset(el){ var b=cmdBox(el); var ta=b.querySelector('textarea'); var st=ta.getAttribute('data-starter')||''; if(ta.CodeMirror) ta.CodeMirror.setValue(st); else ta.value=st; }
-function cmdClear(el){ var b=cmdBox(el); var ta=b.querySelector('textarea'); if(ta.CodeMirror) ta.CodeMirror.setValue(''); else ta.value=''; }
-function cmdCopy(el){ var b=cmdBox(el); var ta=b.querySelector('textarea'); var v=cmVal(ta); navigator.clipboard.writeText(v).then(function(){ var o=b.querySelector('.cout'); if(o){ o.textContent='已复制到剪贴板'; } }); }
+function cmdAns(el){ var b=cmdBox(el); var btn=b.querySelector('.see-ans'); if(btn) btn.click(); else { var ta=b.querySelector('textarea.cm-target'); if(ta&&ta.CodeMirror) ta.CodeMirror.setValue(b.dataset.ans||''); } }
+function cmdReset(el){ var b=cmdBox(el); var ta=b.querySelector('textarea.cm-target'); var st=ta.getAttribute('data-starter')||''; if(ta.CodeMirror) ta.CodeMirror.setValue(st); else ta.value=st; }
+function cmdClear(el){ var b=cmdBox(el); var ta=b.querySelector('textarea.cm-target'); if(ta.CodeMirror) ta.CodeMirror.setValue(''); else ta.value=''; }
+function cmdCopy(el){ var b=cmdBox(el); var ta=b.querySelector('textarea.cm-target'); var v=cmVal(ta); navigator.clipboard.writeText(v).then(function(){ var o=b.querySelector('.cout'); if(o){ o.textContent='已复制到剪贴板'; } }); }
 function cmVal(ta){
   return ta.CodeMirror ? ta.CodeMirror.getValue() : ta.value;
 }
 function showAns(btn){
   var box=btn.closest('.codebox');
-  var ta=box.querySelector('textarea');
+  var ta=box.querySelector('textarea.cm-target');
   if(!ta) return;
   if(ta.CodeMirror){
     ta.CodeMirror.setValue(btn.dataset.ans); ta.CodeMirror.focus();
@@ -1839,7 +1839,7 @@ function showAns(btn){
 }
 async function runCode(btn){
   var box = btn.closest('.codebox');
-  var ta = box.querySelector('textarea');
+  var ta = box.querySelector('textarea.cm-target');
   var out = box.querySelector('.cout');
   var vrd = box.querySelector('.vrd');
   var expect = box.dataset.expect;
