@@ -1812,22 +1812,38 @@ function toggleCmdMenu(btn){ var m=btn.closest('.codebox').querySelector('.cmd-m
 function cmdBox(el){ return el.closest('.codebox'); }
 function cmdRun(el){ var b=cmdBox(el); var btn=b.querySelector('.run'); if(btn) btn.click(); }
 function cmdAns(el){ var b=cmdBox(el); var btn=b.querySelector('.see-ans'); if(btn) btn.click(); else { var ta=b.querySelector('textarea.cm-target'); if(ta&&ta.CodeMirror) ta.CodeMirror.setValue(b.dataset.ans||''); } }
-function cmdReset(el){ var b=cmdBox(el); var ta=b.querySelector('textarea.cm-target'); var st=ta.getAttribute('data-starter')||''; if(ta.CodeMirror) ta.CodeMirror.setValue(st); else ta.value=st; }
-function cmdClear(el){ var b=cmdBox(el); var ta=b.querySelector('textarea.cm-target'); if(ta.CodeMirror) ta.CodeMirror.setValue(''); else ta.value=''; }
+function cmdReset(el){ var b=cmdBox(el); var ta=b.querySelector('textarea.cm-target'); var st=ta.getAttribute('data-starter')||''; cmSet(ta, st); }
+function cmdClear(el){ var b=cmdBox(el); var ta=b.querySelector('textarea.cm-target'); cmSet(ta, ''); }
 function cmdCopy(el){ var b=cmdBox(el); var ta=b.querySelector('textarea.cm-target'); var v=cmVal(ta); navigator.clipboard.writeText(v).then(function(){ var o=b.querySelector('.cout'); if(o){ o.textContent='已复制到剪贴板'; } }); }
+function cmOf(box){
+  var ta = box ? box.querySelector('textarea.cm-target') : null;
+  if(ta && ta.CodeMirror) return ta.CodeMirror;
+  var cmEl = box ? box.querySelector('.CodeMirror') : null;
+  if(cmEl && cmEl.CodeMirror) return cmEl.CodeMirror;
+  return null;
+}
 function cmVal(ta){
-  return ta.CodeMirror ? ta.CodeMirror.getValue() : ta.value;
+  var box = ta && ta.closest ? ta.closest('.codebox') : null;
+  var cm = box ? cmOf(box) : (ta ? ta.CodeMirror : null);
+  if(cm) return cm.getValue();
+  return ta ? ta.value : '';
+}
+function cmSet(ta, val){
+  var box = ta && ta.closest ? ta.closest('.codebox') : null;
+  var cm = box ? cmOf(box) : (ta ? ta.CodeMirror : null);
+  if(cm){ cm.setValue(val); cm.focus(); return; }
+  if(ta){ ta.value = val; ta.focus(); }
 }
 function showAns(btn){
   var box=btn.closest('.codebox');
   var ta=box.querySelector('textarea.cm-target');
   if(!ta) return;
-  if(ta.CodeMirror){
-    ta.CodeMirror.setValue(btn.dataset.ans); ta.CodeMirror.focus();
+  if(cmOf(box)){
+    cmSet(ta, btn.dataset.ans);
   } else {
     // CM 未就绪：等编辑器初始化后再填答案，避免冒出第二个输入框
     ensureCM(function(){
-      if(ta.CodeMirror){ ta.CodeMirror.setValue(btn.dataset.ans); ta.CodeMirror.focus(); }
+      if(cmOf(box)){ cmSet(ta, btn.dataset.ans); }
       else {
         ta.value=btn.dataset.ans; ta.focus();
         if(ta.style.display==='none') ta.style.display='';
@@ -2030,18 +2046,20 @@ function settleByButton(cid){
   var c = CHAPTERS.filter(function(x){return x.id===cid})[0];
   if(!c || !c.quiz) return;
   var total = c.quiz.length;
-  var answered = 0;
-  c.quiz.forEach(function(q,i){ if(quizStat[c.id+'_'+i] !== undefined) answered++; });
-  if(answered < total){
-    alert('还有 '+(total-answered)+' 题没做完（或对错未存档）。把题做完，才能结算本章。');
+  var answered = 0, correct = 0;
+  c.quiz.forEach(function(q,i){
+    var st = quizStat[c.id+'_'+i];
+    if(st !== undefined){ answered++; if(st === 1) correct++; }
+  });
+  if(answered === 0){
+    alert('一题都还没做，先做几题再来结算吧。');
     return;
   }
-  var correct = 0;
-  c.quiz.forEach(function(q,i){ if(quizStat[c.id+'_'+i] === 1) correct++; });
-  var pct = Math.round(correct/total*100);
+  var pct = Math.round(correct/answered*100);
   var dur = chStartTs ? Math.round((Date.now()-chStartTs)/1000) : 0;
-  var allCorrect = correct >= total;
-  var info = { pct:pct, correct:correct, total:total, dur:dur, allCorrect:allCorrect, ts:Date.now(), exam:false, pop:true };
+  var allDone = answered >= total;
+  var allCorrect = allDone && correct >= total;
+  var info = { pct:pct, correct:correct, total:answered, totalAll:total, unanswered:total-answered, dur:dur, allCorrect:allCorrect, ts:Date.now(), exam:false, pop:true };
   settleStore['settle_'+c.id] = info;
   storeSettle();
   if(allCorrect && chDone.indexOf(c.id) === -1){
@@ -2083,6 +2101,7 @@ function showSettlePanel(c, info){
   else enc = '不丢人，这一章确实硬。回去把错题重做一遍，48 小时内再来，你会看到自己长高。';
   var st = calcStats();
   var mile = '已攻克 '+chDone.length+'/'+CHAPTERS.length+' 章 · 总进度 '+st.pct+'%';
+  if(info.unanswered > 0) mile += ' · 还有 '+info.unanswered+' 题未做（不做不计分，做完全对才点亮绿框）';
   if(allCorrect) mile += ' · 👑 本章全通徽章已点亮';
   var oldEl = document.getElementById('settlePanel'); if(oldEl) oldEl.remove();
   var wrap = document.createElement('div');
