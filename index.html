@@ -1845,8 +1845,15 @@ async function runCode(btn){
   out.className='cout';
   out.textContent='运行中……';
   try{
-    await pyodide.runPythonAsync(code);
-    var got = pyStdout.replace(/\n+$/,'');
+    // Python 层 stdout/stderr 重定向（io.StringIO，不依赖 setStdout API，兼容性最稳）
+    var pre = "import sys as __pjc_sys__, io as __pjc_io__\n__pjc_sys__.stdout = __pjc_io__.StringIO()\n__pjc_sys__.stderr = __pjc_io__.StringIO()\n";
+    var runErr = null;
+    try { await pyodide.runPythonAsync(pre + code); }
+    catch(e){ runErr = e; }
+    var gotTxt = '';
+    try { gotTxt = pyodide.runPython("__pjc_sys__.stdout.getvalue() + __pjc_sys__.stderr.getvalue()") || ''; } catch(e2){}
+    if(runErr && !gotTxt){ gotTxt = '错误：' + (runErr.message || String(runErr)); }
+    var got = gotTxt.replace(/\n+$/,'');
     if(expect!==undefined){
       // 宽松判题：行级归一化（每行去首尾空格、去首尾空行）+ 数字数值比较
       function normOut(str){
@@ -1893,7 +1900,11 @@ async function runCode(btn){
           }
         }
       } else {
-        if(key && wrongPool.indexOf(key)<0) wrongPool.push(key);
+        if(key){
+          // 做过但错：计入「已做」，可结算本章（正确率降低）
+          if(quizStat[key] === undefined) quizStat[key] = 0;
+          if(wrongPool.indexOf(key)<0) wrongPool.push(key);
+        }
         saveQuiz();
       }
       out.textContent = got==='' ? (expect==='' ? '✅ 运行成功（本题无固定输出，跑通即过）' : '(无输出：代码里没有 print 输出，检查一下)') : got;
@@ -1905,7 +1916,15 @@ async function runCode(btn){
     out.className='cout err';
     out.textContent = '错误：'+e.message;
     vrd.className='vrd no';
-    if(expect!==undefined) vrd.textContent='✗ 还没跑通，看报错信息修一修';
+    if(expect!==undefined){
+      vrd.textContent='✗ 还没跑通，看报错信息修一修';
+      var keyE = box.dataset.key;
+      if(keyE){
+        if(quizStat[keyE] === undefined) quizStat[keyE] = 0;
+        if(wrongPool.indexOf(keyE)<0) wrongPool.push(keyE);
+        saveQuiz();
+      }
+    }
   }
 }
 
@@ -2231,8 +2250,15 @@ async function runLab(){
   out.className='lab-out';
   out.textContent='运行中……';
   try{
-    await pyodide.runPythonAsync(code);
-    out.textContent=pyStdout.replace(/\n+$/,'')||'(无输出)';
+    var pre2 = "import sys as __pjc_sys__, io as __pjc_io__\n__pjc_sys__.stdout = __pjc_io__.StringIO()\n__pjc_sys__.stderr = __pjc_io__.StringIO()\n";
+    var runErr2 = null;
+    try { await pyodide.runPythonAsync(pre2 + code); }
+    catch(e){ runErr2 = e; }
+    var gotTxt2 = '';
+    try { gotTxt2 = pyodide.runPython("__pjc_sys__.stdout.getvalue() + __pjc_sys__.stderr.getvalue()") || ''; } catch(e2){}
+    if(runErr2 && !gotTxt2){ gotTxt2 = '错误：' + (runErr2.message || String(runErr2)); }
+    out.textContent = gotTxt2.replace(/\n+$/,'') || '(无输出)';
+    if(runErr2){ out.className='lab-out err'; }
   }catch(e){
     out.className='lab-out err';
     out.textContent='错误：'+e.message;
