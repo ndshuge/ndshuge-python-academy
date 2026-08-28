@@ -1615,10 +1615,9 @@ function renderChDetail(c){
   });
   if(c.example) h+='<div class="sec example"><div class="t">✏️ 例题：'+c.example.q+'</div>'+(c.example.code?codeBlock(c.example.code):'')+'<div class="s">'+c.example.s+'</div></div>';
   if(c.traps) h+='<div class="card"><h3>⚠️ 易错点 <span class="tag">避坑指南</span></h3>'+c.traps.map(function(t){return '<div class="trap"><span class="x">✗</span><span>'+t+'</span></div>'}).join('')+'</div>';
-  if(c.quiz) h+='<div class="card" style="border-color:rgba(59,110,165,.4)"><h3>🎯 随堂练习 <span class="tag">即时批改</span></h3><div id="chSummary_'+c.id+'"></div><div id="qzbox_'+c.id+'"></div></div>';
+  if(c.quiz) h+='<div class="card" style="border-color:rgba(59,110,165,.4)"><h3>🎯 随堂练习 <span class="tag">即时批改</span></h3><div id="chSummary_'+c.id+'"></div><div id="qzbox_'+c.id+'"></div><div style="text-align:center;margin-top:20px"><button id="btnSettle_'+c.id+'" onclick="settleByButton('+c.id+')" style="border:none;background:linear-gradient(135deg,#3B6EA5,#2C537C);color:#fff;border-radius:980px;padding:12px 36px;font-family:inherit;font-size:15px;cursor:pointer;font-weight:500;letter-spacing:2px;box-shadow:0 4px 16px rgba(59,110,165,.3)">🎓 结算本章</button><div style="font-size:12px;color:var(--muted);margin-top:8px">全部题目做完后，可结算一次；结算结果保存在下方</div><div id="settleResult_'+c.id+'" style="margin-top:16px;text-align:left"></div></div></div>';
   if(c.dialogue) h+='<div class="card"><h3>💬 导师提问 <span class="tag">问答批改</span></h3><div class="dia-box"><div class="q" style="font-size:14.5px;font-weight:600;margin-bottom:8px">'+c.dialogue.q+'</div><textarea id="diaInput" placeholder="用你自己的话回答，写得越完整越好……"></textarea><br><button class="btn primary" style="margin-top:8px" onclick="checkDialogue()">提交批改</button><div class="dia-result" id="diaResult"></div></div></div>';
 
-  if(c.quiz) h+='<div style="text-align:center;margin-top:26px"><button id="btnSettle_'+c.id+'" onclick="settleByButton('+c.id+')" style="border:none;background:linear-gradient(135deg,#3B6EA5,#2C537C);color:#fff;border-radius:980px;padding:14px 44px;font-family:inherit;font-size:17px;cursor:pointer;font-weight:500;letter-spacing:2px;box-shadow:0 4px 16px rgba(59,110,165,.35)">🎓 结算本章</button><div style="font-size:12px;color:var(--muted);margin-top:8px">全部题目做完后，可结算一次；结算结果保存在下方</div><div id="settleResult_'+c.id+'" style="margin-top:16px"></div></div>';
   h+='<button class="btn-back" style="margin-top:10px" onclick="closeCh()">← 返回章节列表</button>';
   return h;
 }
@@ -1819,10 +1818,18 @@ function showAns(btn){
   var box=btn.closest('.codebox');
   var ta=box.querySelector('textarea');
   if(!ta) return;
-  // 若 CM 初始化失败导致 textarea 被隐藏，先恢复可见
-  if(!ta.CodeMirror && ta.style.display==='none') ta.style.display='';
-  if(ta.CodeMirror){ ta.CodeMirror.setValue(btn.dataset.ans); ta.CodeMirror.focus(); }
-  else { ta.value=btn.dataset.ans; ta.focus(); }
+  if(ta.CodeMirror){
+    ta.CodeMirror.setValue(btn.dataset.ans); ta.CodeMirror.focus();
+  } else {
+    // CM 未就绪：等编辑器初始化后再填答案，避免冒出第二个输入框
+    ensureCM(function(){
+      if(ta.CodeMirror){ ta.CodeMirror.setValue(btn.dataset.ans); ta.CodeMirror.focus(); }
+      else {
+        ta.value=btn.dataset.ans; ta.focus();
+        if(ta.style.display==='none') ta.style.display='';
+      }
+    });
+  }
   var cout=box.querySelector('.cout');
   if(cout) cout.textContent='答案已填入，点运行查看输出';
 }
@@ -1845,16 +1852,33 @@ async function runCode(btn){
   out.className='cout';
   out.textContent='运行中……';
   try{
-    // Python 层 stdout/stderr 重定向（io.StringIO，不依赖 setStdout API，兼容性最稳）
-    var pre = "import sys as __pjc_sys__, io as __pjc_io__\n__pjc_sys__.stdout = __pjc_io__.StringIO()\n__pjc_sys__.stderr = __pjc_io__.StringIO()\n";
+    // Python 层执行：JSON 安全传码 + try/except 捕获异常写缓冲区（报错也可见）
+    var pre = "__pjc_code__ = " + JSON.stringify(code) +
+      "\nimport sys as __pjc_sys__, io as __pjc_io__" +
+      "\n__pjc_sys__.stdout = __pjc_io__.StringIO()" +
+      "\n__pjc_sys__.stderr = __pjc_io__.StringIO()" +
+      "\ntry:" +
+      "\n    exec(compile(__pjc_code__, '<student_code>', 'exec'))" +
+      "\nexcept BaseException as __pjc_e__:" +
+      "\n    import traceback as __pjc_tb__" +
+      "\n    __pjc_sys__.stderr.write('Traceback (most recent call last):\\n' + ''.join(__pjc_tb__.format_exception(type(__pjc_e__), __pjc_e__, __pjc_e__.__traceback__)))" +
+      "\n";
     var runErr = null;
-    try { await pyodide.runPythonAsync(pre + code); }
+    try { await pyodide.runPythonAsync(pre); }
     catch(e){ runErr = e; }
     var gotTxt = '';
     try { gotTxt = pyodide.runPython("__pjc_sys__.stdout.getvalue() + __pjc_sys__.stderr.getvalue()") || ''; } catch(e2){}
     if(runErr && !gotTxt){ gotTxt = '错误：' + (runErr.message || String(runErr)); }
     var got = gotTxt.replace(/\n+$/,'');
-    if(expect!==undefined){
+    var isErr = runErr || got.indexOf('Traceback') > -1;
+    if(isErr && expect!==undefined){
+      // 报错分支：明确显示错误信息，计入错题
+      vrd.className='vrd no';
+      vrd.textContent='✗ 还没跑通，看报错信息修一修';
+      var keyE2 = box.dataset.key;
+      if(keyE2){ if(quizStat[keyE2] === undefined) quizStat[keyE2] = 0; if(wrongPool.indexOf(keyE2)<0) wrongPool.push(keyE2); saveQuiz(); }
+      out.textContent = got || ('错误：' + (runErr ? (runErr.message || String(runErr)) : '运行出错'));
+    } else if(expect!==undefined){
       // 宽松判题：行级归一化（每行去首尾空格、去首尾空行）+ 数字数值比较
       function normOut(str){
         var lines = str.split('\n').map(function(l){return l.trim()});
@@ -2250,15 +2274,24 @@ async function runLab(){
   out.className='lab-out';
   out.textContent='运行中……';
   try{
-    var pre2 = "import sys as __pjc_sys__, io as __pjc_io__\n__pjc_sys__.stdout = __pjc_io__.StringIO()\n__pjc_sys__.stderr = __pjc_io__.StringIO()\n";
+    var pre2 = "__pjc_code__ = " + JSON.stringify(code) +
+      "\nimport sys as __pjc_sys__, io as __pjc_io__" +
+      "\n__pjc_sys__.stdout = __pjc_io__.StringIO()" +
+      "\n__pjc_sys__.stderr = __pjc_io__.StringIO()" +
+      "\ntry:" +
+      "\n    exec(compile(__pjc_code__, '<lab_code>', 'exec'))" +
+      "\nexcept BaseException as __pjc_e__:" +
+      "\n    import traceback as __pjc_tb__" +
+      "\n    __pjc_sys__.stderr.write('Traceback (most recent call last):\\n' + ''.join(__pjc_tb__.format_exception(type(__pjc_e__), __pjc_e__, __pjc_e__.__traceback__)))" +
+      "\n";
     var runErr2 = null;
-    try { await pyodide.runPythonAsync(pre2 + code); }
+    try { await pyodide.runPythonAsync(pre2); }
     catch(e){ runErr2 = e; }
     var gotTxt2 = '';
     try { gotTxt2 = pyodide.runPython("__pjc_sys__.stdout.getvalue() + __pjc_sys__.stderr.getvalue()") || ''; } catch(e2){}
     if(runErr2 && !gotTxt2){ gotTxt2 = '错误：' + (runErr2.message || String(runErr2)); }
-    out.textContent = gotTxt2.replace(/\n+$/,'') || '(无输出)';
-    if(runErr2){ out.className='lab-out err'; }
+    out.textContent = gotTxt2.replace(/\n+$/,'') || (runErr2 ? '运行出错' : '(无输出)');
+    if(runErr2 || gotTxt2.indexOf('Traceback') > -1){ out.className='lab-out err'; }
   }catch(e){
     out.className='lab-out err';
     out.textContent='错误：'+e.message;
