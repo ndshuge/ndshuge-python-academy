@@ -469,6 +469,13 @@ pre.code .lang{position:absolute;top:8px;right:12px;font-size:10px;color:#777;le
 .tutor-fact{font-size:13.5px; color:var(--ink2); line-height:1.85}
 .tutor-quote{margin-top:12px; border-left:3px solid var(--gold); background:rgba(184,134,11,.07); border-radius:0 10px 10px 0; padding:10px 14px; font-size:13px; color:#7a5c10; font-style:italic}
 /* ===== 手机端适配 ===== */
+/* 悬浮导航（不随滚动）：回退键 + 主页键 */
+.fab-nav{position:fixed;right:18px;bottom:22px;display:flex;flex-direction:column;gap:10px;z-index:9998}
+.fab-nav button{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--blue);font-size:17px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;transition:.15s}
+.fab-nav button:hover{background:var(--blue-bg);transform:translateY(-2px)}
+.fab-nav button .fab-tip{position:absolute;right:56px;background:var(--ink);color:#F5EFE4;font-size:12px;padding:4px 10px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:.15s}
+.fab-nav button:hover .fab-tip{opacity:1}
+.fab-nav button{position:relative}
 .side-fab{position:fixed; left:14px; bottom:18px; width:46px; height:46px; border-radius:50%; border:1px solid var(--line); background:var(--card); color:var(--blue); font-size:18px; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.18); z-index:9998; align-items:center; justify-content:center; display:none; transition:transform .15s}
 .side-fab:hover{transform:scale(1.1)}
 @media (max-width:860px){
@@ -1290,10 +1297,14 @@ function renderNav(){
     });
   });
 }
-function go(p){
+var navStack = [];
+function go(p, silent){
   if(p==='manage'){ openManageModal(); return; }
   studyTimerLeave();
   if(p==='lesson' || p==='hall' || p==='exam') studyTimerEnter();
+  var prevP = curPage;
+  if(!silent && p !== prevP && prevP && navStack[navStack.length-1] !== prevP) navStack.push(prevP);
+  if(p==='lesson' && curCh) closeCh();
   curPage=p;
   document.querySelectorAll('.page').forEach(function(el){el.classList.remove('on')});
   $('#page-'+p).classList.add('on');
@@ -1308,9 +1319,35 @@ function go(p){
   if(p==='honor') renderHonor();
   if(p==='about') renderAbout();
   if(p==='lesson') renderChSelect();
+  setFabVisible(p !== 'home');
   initCodeMirrors();
   window.scrollTo(0,0);
 }
+function setFabVisible(v){
+  var el = document.getElementById('fabNav');
+  if(el) el.style.display = v ? 'flex' : 'none';
+}
+(function(){
+  function bindFab(){
+    var back = document.getElementById('fabBack');
+    var home = document.getElementById('fabHome');
+    if(back && !back.dataset.bound){ back.dataset.bound='1'; back.addEventListener('click', function(){
+      if(curCh){ closeCh(); setFabVisible(true); return; }
+      var prev = navStack.pop();
+      if(prev && prev !== curPage){ go(prev, true); } else { go('home'); }
+    }); }
+    if(home && !home.dataset.bound){ home.dataset.bound='1'; home.addEventListener('click', function(){
+      navStack = [];
+      if(curCh) closeCh();
+      go('home');
+    }); }
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', bindFab);
+  } else {
+    setTimeout(bindFab, 0);
+  }
+})();
 /* ===== 侧边栏折叠（普林斯顿微积分学院同款）===== */
 (function(){
   var st = document.getElementById('sideToggle');
@@ -1520,7 +1557,9 @@ function openCh(id){
   curCh = CHAPTERS.filter(function(x){return x.id===id})[0];
   $('#page-lesson').innerHTML = renderChDetail(curCh);
   if(curCh.story.interact) renderInteract(curCh.story.interact);
-  if(curCh.quiz) renderQuiz(curCh, $('#qzbox_'+curCh.id), 'lesson');
+  if(curCh.quiz){ renderQuiz(curCh, $('#qzbox_'+curCh.id), 'lesson'); renderChSummary(curCh); renderSettleResult(curCh); }
+  if(curCh.exam) renderExamStatus(curCh);
+  chStartTs = Date.now();
   initCodeMirrors();
   window.scrollTo(0,0);
 }
@@ -1536,9 +1575,9 @@ function renderChDetail(c){
   });
   if(c.example) h+='<div class="sec example"><div class="t">✏️ 例题：'+c.example.q+'</div>'+(c.example.code?codeBlock(c.example.code):'')+'<div class="s">'+c.example.s+'</div></div>';
   if(c.traps) h+='<div class="card"><h3>⚠️ 易错点 <span class="tag">避坑指南</span></h3>'+c.traps.map(function(t){return '<div class="trap"><span class="x">✗</span><span>'+t+'</span></div>'}).join('')+'</div>';
-  if(c.quiz) h+='<div class="card" style="border-color:rgba(59,110,165,.4)"><h3>🎯 随堂练习 <span class="tag">即时批改</span></h3><div id="qzbox_'+c.id+'"></div></div>';
+  if(c.quiz) h+='<div class="card" style="border-color:rgba(59,110,165,.4)"><h3>🎯 随堂练习 <span class="tag">即时批改</span></h3><div id="chSummary_'+c.id+'"></div><div id="settleResult_'+c.id+'"></div><div id="qzbox_'+c.id+'"></div></div>';
   if(c.dialogue) h+='<div class="card"><h3>💬 导师提问 <span class="tag">问答批改</span></h3><div class="dia-box"><div class="q" style="font-size:14.5px;font-weight:600;margin-bottom:8px">'+c.dialogue.q+'</div><textarea id="diaInput" placeholder="用你自己的话回答，写得越完整越好……"></textarea><br><button class="btn primary" style="margin-top:8px" onclick="checkDialogue()">提交批改</button><div class="dia-result" id="diaResult"></div></div></div>';
-  if(c.exam) h+='<div class="card"><h3>📝 本章考试 <span class="tag">'+c.exam.length+' 题</span></h3><div id="exbox_'+c.id+'"></div></div>';
+  if(c.exam) h+='<div class="card"><h3>📝 本章考试 <span class="tag">'+c.exam.length+' 题</span></h3><div id="exStatus_'+c.id+'"></div><div id="exbox_'+c.id+'"></div></div>';
   h+='<button class="btn-back" style="margin-top:10px" onclick="closeCh()">← 返回章节列表</button>';
   return h;
 }
@@ -1619,7 +1658,8 @@ function checkChoice(btn){
   }
   quiz.querySelector('.explain').classList.add('show');
   saveQuiz(); renderProgress();
-  if(curPage==='wrong') renderWrong();
+  if(curPage==='wrong'){ renderWrong(); }
+  else { renderChSummary(c); settleCheck(c, false); }
 }
 
 /* ================= Pyodide 代码运行器 ================= */
@@ -1766,8 +1806,29 @@ async function runCode(btn){
     await pyodide.runPythonAsync(code);
     var got = pyStdout.replace(/\n+$/,'');
     if(expect!==undefined){
+      // 宽松判题：行级归一化（每行去首尾空格、去首尾空行）+ 数字数值比较
+      function normOut(str){
+        var lines = str.split('\n').map(function(l){return l.trim()});
+        while(lines.length && lines[0]==='') lines.shift();
+        while(lines.length && lines[lines.length-1]==='') lines.pop();
+        return lines.join('\n');
+      }
+      var gotT = got.trim();
       var exps = expect.split('|').map(function(s){return s.trim()});
-      var ok = exps.indexOf(got.trim())>-1;
+      var ok = false;
+      if(expect === ''){
+        // 无期望输出（随机输出类题目）：代码跑通无报错即通过
+        ok = true;
+      } else {
+        for(var ei=0; ei<exps.length; ei++){
+          var e = exps[ei];
+          if(e === gotT || normOut(e) === normOut(got)){ ok = true; break; }
+          // 单行数字：宽容浮点格式（15.0 === 15）
+          if(e.indexOf('\n')<0 && gotT.indexOf('\n')<0 && /^-?\d+(\.\d+)?$/.test(e) && /^-?\d+(\.\d+)?$/.test(gotT)){
+            if(parseFloat(e) === parseFloat(gotT)){ ok = true; break; }
+          }
+        }
+      }
       vrd.className='vrd '+(ok?'ok':'no');
       vrd.textContent = ok ? '✓ 输出正确，通过！' : '✗ 输出不对，再想想（期望：'+exps.join(' 或 ')+'）';
       if(ok){
@@ -1778,6 +1839,16 @@ async function runCode(btn){
           var qz=box.closest('.quiz'); if(qz) qz.classList.add('done');
           var wp=wrongPool.indexOf(key); if(wp>-1){wrongPool.splice(wp,1); if(fixedPool.indexOf(key)<0) fixedPool.push(key);}
           saveQuiz(); renderProgress();
+        }
+        if(key){
+          var kp = key.split('_');
+          var isExam = kp[0]==='ex';
+          var cid = +(isExam ? kp[1] : kp[0]);
+          var cc = CHAPTERS.filter(function(x){return x.id===cid})[0];
+          if(cc){
+            if(isExam){ renderExamStatus(cc); settleCheck(cc, true); }
+            else { renderChSummary(cc); settleCheck(cc, false); }
+          }
         }
       } else {
         if(key && wrongPool.indexOf(key)<0) wrongPool.push(key);
@@ -1814,6 +1885,106 @@ function renderHall(){
     html+=qh;
   });
   $('#page-hall').innerHTML=html;
+}
+
+/* ===== 章节概要 + 结算体系（与微积分学院对齐）===== */
+var settleStore = load('settle', {});
+function storeSettle(){ store('settle', settleStore); }
+var chStartTs = null;
+function chSummaryHTML(c){
+  var total = c.quiz ? c.quiz.length : 0;
+  if(!total) return '';
+  var answered = chQuizDone(c);
+  var correct = 0;
+  c.quiz.forEach(function(q,i){ if(quizStat[c.id+'_'+i]===1) correct++; });
+  var pct = answered ? Math.round(correct/answered*100) : null;
+  var allDone = answered >= total;
+  var allCorrect = allDone && correct >= total;
+  var st = allCorrect ? '👑 全通！' : (pct!==null && pct>=80 ? '🔥 状态极佳' : (pct!==null && pct>=60 ? '📈 渐入佳境' : (answered ? '💪 继续加练' : '✏️ 等你开答')));
+  return '<div style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--ink2);display:flex;gap:16px;flex-wrap:wrap;align-items:center">' +
+    '<span><b style="color:var(--ink)">已答 '+answered+'/'+total+'</b> 题</span>' +
+    '<span>正确率 <b style="color:'+(pct===null?'var(--ink)':(pct>=60?'#3a6b47':'#8B2C1F'))+'">'+(pct===null?'—':pct+'%')+'</b></span>' +
+    '<span>'+st+'</span></div>';
+}
+function renderChSummary(c){
+  var box = document.getElementById('chSummary_'+c.id);
+  if(!box) return;
+  box.innerHTML = chSummaryHTML(c);
+}
+function renderExamStatus(c){
+  var box = document.getElementById('exStatus_'+c.id);
+  if(!box || !c.exam) return;
+  var answered = 0, correct = 0;
+  c.exam.forEach(function(q,i){
+    var st = quizStat['ex_'+c.id+'_'+i];
+    if(st !== undefined){ answered++; if(st === 1) correct++; }
+  });
+  var full = answered >= c.exam.length && correct >= c.exam.length;
+  box.innerHTML = '<div style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--ink2);display:flex;gap:16px;flex-wrap:wrap;align-items:center">' +
+    '<span>已答 <b style="color:var(--ink)">'+answered+'/'+c.exam.length+'</b> 题</span>' +
+    '<span>答对 <b style="color:var(--ink)">'+correct+'</b> 题</span>' +
+    (full ? '<span>👑 本章考试全通！</span>' : '') + '</div>';
+}
+function renderSettleResult(c){
+  var box = document.getElementById('settleResult_'+c.id);
+  if(!box) return;
+  var s = settleStore['settle_'+c.id];
+  if(!s){ box.innerHTML=''; return; }
+  var d = new Date(s.ts);
+  var dateStr = (d.getMonth()+1)+'月'+d.getDate()+'日 '+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();
+  var all = s.allCorrect ? ' · 👑 全通' : '';
+  box.innerHTML = '<div style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:13px">' +
+    '<b style="color:var(--ink)">上次结算：'+(s.exam?'📝 考试':'🎯 练习')+' '+s.correct+'/'+s.total+' 题 · '+s.pct+'%</b>'+all +
+    ' <span style="color:var(--ink2)">用时 '+fmtDurCn(s.dur)+' · '+dateStr+'</span></div>';
+}
+function settleCheck(c, isExam){
+  var total = isExam ? (c.exam ? c.exam.length : 0) : (c.quiz ? c.quiz.length : 0);
+  if(!total) return;
+  var answered = 0, correct = 0;
+  for(var i=0;i<total;i++){
+    var k = (isExam ? 'ex_' : '') + c.id + '_' + i;
+    if(quizStat[k] !== undefined){ answered++; if(quizStat[k] === 1) correct++; }
+  }
+  if(answered < total) return;
+  var prev = settleStore['settle_'+c.id];
+  if(prev && prev.pop && prev.correct === correct && prev.total === total) return; // 结果没变，不重复弹
+  var dur = chStartTs ? Math.round((Date.now()-chStartTs)/1000) : 0;
+  var info = { pct: Math.round(correct/total*100), correct: correct, total: total, dur: dur, allCorrect: correct>=total, ts: Date.now(), exam: isExam, pop: true };
+  settleStore['settle_'+c.id] = info;
+  storeSettle();
+  showSettlePanel(c, info);
+}
+function showSettlePanel(c, s){
+  var pct = s.pct, allCorrect = s.allCorrect;
+  var enc;
+  if(allCorrect) enc = '完美通关！你的代码跑通了每一个练习，这正是编程该有的手感。佩奇的第一行代码，也是这样一行行跑通的。';
+  else if(pct >= 80) enc = '状态极佳！错的那几道，正好是下次要盯紧的目标。回错题本订正一遍，你就圆满了。';
+  else if(pct >= 60) enc = '渐入佳境。编程是敲出来的肌肉记忆，多练几轮，你就是那个写代码不用想的人。';
+  else enc = '不丢人，这章确实硬。回去把错题重做一遍，48 小时后再来，你会看到自己长高了。';
+  var st = calcStats();
+  var mile = '已攻克 '+chDone.length+'/'+CHAPTERS.length+' 章 · 总进度 '+st.pct+'%';
+  if(allCorrect) mile += ' · 👑 本章全通徽章已点亮';
+  var old = document.getElementById('settlePanel'); if(old) old.remove();
+  var wrap = document.createElement('div');
+  wrap.id = 'settlePanel';
+  wrap.style.cssText = 'position:fixed;inset:0;background:rgba(28,26,24,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto';
+  wrap.onclick = function(){ wrap.remove(); };
+  var box = document.createElement('div');
+  box.style.cssText = 'background:#FBF7EE;border-radius:16px;padding:26px 30px;max-width:560px;width:100%;box-shadow:0 16px 60px rgba(0,0,0,.3);border:1px solid rgba(59,110,165,.3);max-height:90vh;overflow:auto';
+  box.onclick = function(e){ e.stopPropagation(); };
+  box.innerHTML =
+    '<div style="font-size:11px;letter-spacing:2px;color:#3B6EA5;font-weight:600;text-transform:uppercase">'+(s.exam?'EXAM SETTLEMENT':'PRACTICE SETTLEMENT')+'</div>' +
+    '<div style="font-size:22px;font-weight:700;color:#24211C;margin:6px 0 14px">'+(s.exam?'📝 '+c.no+' 章考试结算':'🎯 '+c.no+' 章练习结算')+'</div>' +
+    '<div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:16px">' +
+      '<div><div style="font-size:11px;color:#8a8578;letter-spacing:1px">正确率</div><div style="font-size:30px;font-weight:700;color:'+(pct>=60?'#3a6b47':'#8B2C1F')+'">'+pct+'%</div></div>' +
+      '<div><div style="font-size:11px;color:#8a8578;letter-spacing:1px">答对</div><div style="font-size:30px;font-weight:700;color:#24211C">'+s.correct+'/'+s.total+'</div></div>' +
+      '<div><div style="font-size:11px;color:#8a8578;letter-spacing:1px">用时</div><div style="font-size:30px;font-weight:700;color:#24211C">'+fmtDurCn(s.dur)+'</div></div>' +
+    '</div>' +
+    '<div style="font-size:14px;line-height:1.7;color:#5a554b;background:rgba(59,110,165,.06);border-radius:10px;padding:12px 14px;margin-bottom:12px">'+enc+'</div>' +
+    '<div style="font-size:13px;color:#8a8578;margin-bottom:18px">'+mile+'</div>' +
+    '<button style="width:100%;padding:12px;border:none;border-radius:10px;background:#3B6EA5;color:#fff;font-size:15px;font-weight:600;cursor:pointer" onclick="this.closest(\'#settlePanel\').remove()">收下战绩，继续刷下一章</button>';
+  document.body.appendChild(wrap);
+  wrap.appendChild(box);
 }
 
 /* ================= 章节考试 ================= */
@@ -1858,6 +2029,7 @@ function checkExam(btn){
   quizStat[key]=ok?1:0; sessionLog('exam', c, key, ok);
   statRecordQ(ok);
   if(ok){ hallDone[key]=1; quiz.classList.add('done'); saveQuiz(); renderProgress(); }
+  renderExamStatus(c); settleCheck(c, true);
 }
 
 /* ================= 错题本 ================= */
@@ -2831,6 +3003,10 @@ if(!pyLoading) ensurePy();
     </div>
   </div>
 </div>
+  <div id="fabNav" class="fab-nav" style="display:none">
+    <button id="fabHome" title="回主页"><span class="fab-tip">回主页</span>⌂</button>
+    <button id="fabBack" title="返回上一页"><span class="fab-tip">返回</span>←</button>
+  </div>
 <button id="sideFab" class="side-fab" onclick="toggleSide()" title="展开侧栏">☰</button>
 <div class="modal-mask" id="progressModal" style="display:none" onclick="closeManageModal()">
   <div class="modal-card" onclick="event.stopPropagation()">
