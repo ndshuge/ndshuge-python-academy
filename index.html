@@ -1612,9 +1612,10 @@ function renderChDetail(c){
   });
   if(c.example) h+='<div class="sec example"><div class="t">✏️ 例题：'+c.example.q+'</div>'+(c.example.code?codeBlock(c.example.code):'')+'<div class="s">'+c.example.s+'</div></div>';
   if(c.traps) h+='<div class="card"><h3>⚠️ 易错点 <span class="tag">避坑指南</span></h3>'+c.traps.map(function(t){return '<div class="trap"><span class="x">✗</span><span>'+t+'</span></div>'}).join('')+'</div>';
-  if(c.quiz) h+='<div class="card" style="border-color:rgba(59,110,165,.4)"><h3>🎯 随堂练习 <span class="tag">即时批改</span></h3><div id="chSummary_'+c.id+'"></div><div id="settleResult_'+c.id+'"></div><div id="qzbox_'+c.id+'"></div></div>';
+  if(c.quiz) h+='<div class="card" style="border-color:rgba(59,110,165,.4)"><h3>🎯 随堂练习 <span class="tag">即时批改</span></h3><div id="chSummary_'+c.id+'"></div><div id="qzbox_'+c.id+'"></div></div>';
   if(c.dialogue) h+='<div class="card"><h3>💬 导师提问 <span class="tag">问答批改</span></h3><div class="dia-box"><div class="q" style="font-size:14.5px;font-weight:600;margin-bottom:8px">'+c.dialogue.q+'</div><textarea id="diaInput" placeholder="用你自己的话回答，写得越完整越好……"></textarea><br><button class="btn primary" style="margin-top:8px" onclick="checkDialogue()">提交批改</button><div class="dia-result" id="diaResult"></div></div></div>';
-  if(c.exam) h+='<div class="card" style="border-color:rgba(59,110,165,.25)"><h3>📝 本章考试 <span class="tag">'+c.exam.length+' 题 · 独立考场</span></h3><p style="color:var(--muted);font-size:13px">考试在独立考场进行（侧边栏「章节考试」），和课程讲义分开。</p><a class="exam-go" href="javascript:go(\'exam\');renderExam('+c.id+')" style="display:inline-block;margin-top:8px;padding:8px 18px;border-radius:8px;background:var(--blue);color:#fff;font-size:14px;text-decoration:none">去考这一章 →</a></div>';
+
+  if(c.quiz) h+='<div style="text-align:center;margin-top:26px"><button id="btnSettle_'+c.id+'" onclick="settleByButton('+c.id+')" style="border:none;background:linear-gradient(135deg,#3B6EA5,#2C537C);color:#fff;border-radius:980px;padding:14px 44px;font-family:inherit;font-size:17px;cursor:pointer;font-weight:500;letter-spacing:2px;box-shadow:0 4px 16px rgba(59,110,165,.35)">🎓 结算本章</button><div style="font-size:12px;color:var(--muted);margin-top:8px">全部题目做完后，可结算一次；结算结果保存在下方</div><div id="settleResult_'+c.id+'" style="margin-top:16px"></div></div>';
   h+='<button class="btn-back" style="margin-top:10px" onclick="closeCh()">← 返回章节列表</button>';
   return h;
 }
@@ -1696,7 +1697,7 @@ function checkChoice(btn){
   quiz.querySelector('.explain').classList.add('show');
   saveQuiz(); renderProgress();
   if(curPage==='wrong'){ renderWrong(); }
-  else { renderChSummary(c); settleCheck(c, false); }
+  else { renderChSummary(c); }
 }
 
 /* ================= Pyodide 代码运行器 ================= */
@@ -1883,8 +1884,8 @@ async function runCode(btn){
           var cid = +(isExam ? kp[1] : kp[0]);
           var cc = CHAPTERS.filter(function(x){return x.id===cid})[0];
           if(cc){
-            if(isExam){ renderExamStatus(cc); settleCheck(cc, true); }
-            else { renderChSummary(cc); settleCheck(cc, false); }
+            if(isExam){ renderExamStatus(cc); }
+            else { renderChSummary(cc); }
           }
         }
       } else {
@@ -1973,6 +1974,32 @@ function renderSettleResult(c){
   box.innerHTML = '<div style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:13px">' +
     '<b style="color:var(--ink)">上次结算：'+(s.exam?'📝 考试':'🎯 练习')+' '+s.correct+'/'+s.total+' 题 · '+s.pct+'%</b>'+all +
     ' <span style="color:var(--ink2)">用时 '+fmtDurCn(s.dur)+' · '+dateStr+'</span></div>';
+}
+function settleByButton(cid){
+  var c = CHAPTERS.filter(function(x){return x.id===cid})[0];
+  if(!c || !c.quiz) return;
+  var total = c.quiz.length;
+  var answered = 0;
+  c.quiz.forEach(function(q,i){ if(quizStat[c.id+'_'+i] !== undefined) answered++; });
+  if(answered < total){
+    alert('还有 '+(total-answered)+' 题没做完（或对错未存档）。把题做完，才能结算本章。');
+    return;
+  }
+  var correct = 0;
+  c.quiz.forEach(function(q,i){ if(quizStat[c.id+'_'+i] === 1) correct++; });
+  var pct = Math.round(correct/total*100);
+  var dur = chStartTs ? Math.round((Date.now()-chStartTs)/1000) : 0;
+  var allCorrect = correct >= total;
+  var info = { pct:pct, correct:correct, total:total, dur:dur, allCorrect:allCorrect, ts:Date.now(), exam:false, pop:true };
+  settleStore['settle_'+c.id] = info;
+  storeSettle();
+  if(allCorrect && chDone.indexOf(c.id) === -1){
+    chDone.push(c.id); store('ch', chDone);
+    renderChSelect();
+  }
+  renderSettleResult(c);
+  renderChSummary(c);
+  showSettlePanel(c, info);
 }
 function settleCheck(c, isExam){
   var total = isExam ? (c.exam ? c.exam.length : 0) : (c.quiz ? c.quiz.length : 0);
@@ -2086,7 +2113,7 @@ function checkExam(btn){
   quizStat[key]=ok?1:0; sessionLog('exam', c, key, ok);
   statRecordQ(ok);
   if(ok){ hallDone[key]=1; quiz.classList.add('done'); saveQuiz(); renderProgress(); }
-  renderExamStatus(c); settleCheck(c, true);
+  renderExamStatus(c);
 }
 
 /* ================= 错题本 ================= */
