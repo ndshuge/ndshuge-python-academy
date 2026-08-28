@@ -1224,9 +1224,8 @@ function statRecordQ(ok){
   stat.accQ++; if(ok) stat.accC++;
   if(ok){ stat.totalCorrect++; stat.todayCorrect++; }
   storeStat();
-  doCheckin();
 }
-/* ===== 连续打卡 ===== */
+/* ===== 连续打卡：结算一章算打卡一天 ===== */
 function todayStr(){ var d = new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
 function doCheckin(){
   var days = load('checkin', []);
@@ -1398,7 +1397,7 @@ function setFabVisible(v){
     var fab = document.getElementById('sideFab');
     if(!fab) return;
     var isMobile = window.innerWidth <= 860;
-    fab.style.display = (isMobile && sideEl.classList.contains('collapsed')) ? 'flex' : 'none';
+    fab.style.display = isMobile ? 'flex' : 'none';
   }
   window.addEventListener('resize', sideFabSync);
   function sideClearTimers(){
@@ -1655,7 +1654,7 @@ function renderQuiz(c, container, mode){
       qh += '<div class="codebox" data-key="'+key+'"'+(q.expect?' data-expect="'+esc(q.expect)+'"':'')+'>'+
         '<div class="cb-head"><span class="lb">✏️ 在下方写代码</span>'+(q.expect?'<span class="lb">期望输出：'+esc(q.expect.split('|').join(' 或 '))+'</span>':'')+'</div>'+
         '<textarea class="cm-target" spellcheck="false" data-starter="'+esc(starter)+'">'+esc(starter)+'</textarea>'+
-        '<div class="cb-foot"><button class="run" onclick="runCode(this)"'+(done?' disabled title="已通过，答案已锁定"':'')+'>▶ 运行</button><button class="see-ans" onclick="showAns(this)" data-ans="'+esc(q.code||'')+'">👁 查看答案</button><div class="cout"></div></div>'+
+        '<div class="cb-foot"><button class="run" onclick="runCode(this)">▶ 运行</button><button class="see-ans" onclick="showAns(this)" data-ans="'+esc(q.code||'')+'">👁 查看答案</button><div class="cout"></div></div>'+
         '<div class="vrd"></div></div>';
       if(q.hint) qh+='<div style="font-size:12px;color:var(--muted);margin-top:6px">💡 '+q.hint+'</div>';
       qh+='</div>';
@@ -1897,10 +1896,10 @@ async function runCode(btn){
         if(key && wrongPool.indexOf(key)<0) wrongPool.push(key);
         saveQuiz();
       }
-      out.textContent = got==='' ? '(无输出)' : got;
+      out.textContent = got==='' ? (expect==='' ? '✅ 运行成功（本题无固定输出，跑通即过）' : '(无输出：代码里没有 print 输出，检查一下)') : got;
     } else {
       vrd.textContent='';
-      out.textContent = got==='' ? '(无输出)' : got;
+      out.textContent = got==='' ? '(无输出：代码里没有 print 输出)' : got;
     }
   }catch(e){
     out.className='cout err';
@@ -2005,6 +2004,7 @@ function settleByButton(cid){
   renderSettleResult(c);
   renderChSummary(c);
   showSettlePanel(c, info);
+  doCheckin();
 }
 function settleCheck(c, isExam){
   var total = isExam ? (c.exam ? c.exam.length : 0) : (c.quiz ? c.quiz.length : 0);
