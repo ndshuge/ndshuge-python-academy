@@ -314,6 +314,10 @@ pre.code .lang{position:absolute;top:8px;right:12px;font-size:10px;color:#777;le
 .quiz .q{font-size:14.5px;font-weight:600;margin-bottom:10px}
 .quiz .qn{display:inline-block;background:var(--blue);color:#fff;border-radius:6px;font-size:11px;padding:2px 8px;margin-right:8px;vertical-align:2px}
 .quiz .opt{display:block;width:100%;text-align:left;background:transparent;border:1px solid var(--line);border-radius:9px;padding:8px 12px;font-size:13.5px;cursor:pointer;margin:5px 0;font-family:inherit;transition:.15s}
+.quiz.done .opt{opacity:.55;cursor:not-allowed;box-shadow:none}
+.quiz.done .opt:hover{transform:none;border-color:var(--line);background:var(--bg)}
+.quiz.done .run[disabled]{opacity:.5;cursor:not-allowed}
+
 .quiz .opt:hover{border-color:var(--blue);background:rgba(59,110,165,.05)}
 .quiz .opt.correct{border-color:var(--green);background:rgba(74,107,74,.1);color:var(--green);font-weight:600}
 .quiz .opt.wrong{border-color:var(--red);background:rgba(139,44,31,.08);color:var(--red)}
@@ -1651,12 +1655,12 @@ function renderQuiz(c, container, mode){
       qh += '<div class="codebox" data-key="'+key+'"'+(q.expect?' data-expect="'+esc(q.expect)+'"':'')+'>'+
         '<div class="cb-head"><span class="lb">✏️ 在下方写代码</span>'+(q.expect?'<span class="lb">期望输出：'+esc(q.expect.split('|').join(' 或 '))+'</span>':'')+'</div>'+
         '<textarea class="cm-target" spellcheck="false" data-starter="'+esc(starter)+'">'+esc(starter)+'</textarea>'+
-        '<div class="cb-foot"><button class="run" onclick="runCode(this)">▶ 运行</button><button class="see-ans" onclick="showAns(this)" data-ans="'+esc(q.code||'')+'">👁 查看答案</button><div class="cout"></div></div>'+
+        '<div class="cb-foot"><button class="run" onclick="runCode(this)"'+(done?' disabled title="已通过，答案已锁定"':'')+'>▶ 运行</button><button class="see-ans" onclick="showAns(this)" data-ans="'+esc(q.code||'')+'">👁 查看答案</button><div class="cout"></div></div>'+
         '<div class="vrd"></div></div>';
       if(q.hint) qh+='<div style="font-size:12px;color:var(--muted);margin-top:6px">💡 '+q.hint+'</div>';
       qh+='</div>';
     } else {
-      qh += q.options.map(function(o,oi){return '<button class="opt" data-q="'+key+'" data-i="'+oi+'" onclick="checkChoice(this)">'+String.fromCharCode(65+oi)+'. '+o+'</button>'}).join('') +
+      qh += q.options.map(function(o,oi){return '<button class="opt" data-q="'+key+'" data-i="'+oi+'" onclick="checkChoice(this)"'+(done?' disabled':'')+'>'+String.fromCharCode(65+oi)+'. '+o+'</button>'}).join('') +
         '<div class="fb"></div><div class="explain"><b>解析：</b>'+q.explain+'</div></div>';
     }
     return qh;
@@ -1672,6 +1676,7 @@ function checkChoice(btn){
   var c = CHAPTERS.filter(function(x){return x.id===idx[0]})[0];
   var q = c.quiz[idx[1]];
   var quiz = btn.closest('.quiz');
+  if(btn.disabled) return; // 已做锁定
   if(quizStat[key]!==undefined && wrongPool.indexOf(key)>-1) return; // 错题已锁定，需去错题本订正
   var ok = +btn.dataset.i === q.answer;
   quiz.querySelectorAll('.opt').forEach(function(o){o.disabled=true});
