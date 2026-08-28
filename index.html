@@ -1166,6 +1166,7 @@ var lessonsDone = load('lessons', []);
 var chDone = load('ch', []);
 var hallDone = load('hall', []);
 var quizStat = load('qstat', {});
+var usercode = load('usercode', {});
 var wrongPool = load('wrong', []);
 var fixedPool = load('fixed', []);
 var studyLog = load('log', []);
@@ -1654,10 +1655,13 @@ function renderQuiz(c, container, mode){
     var qh = '<div class="quiz'+(done?' done':'')+'" id="q_'+key+'"><div class="q"><span class="qn">Q'+(i+1)+'</span>'+q.q+(done?'<span class="hall-done-tag">✓ 已做</span>':'')+'</div>';
     if(q.type==='code'){
       var starter = q.start ? q.start : '# 在下方编写代码\n# 运行后与期望输出比对';
+      var ucode = (usercode && usercode[key] !== undefined) ? usercode[key] : null;
+      var showCode = done && ucode !== null ? ucode : starter;
+      var tag = done ? (quizStat[key] === 1 ? '<span class="hall-done-tag">✓ 已做</span>' : '<span class="hall-done-tag" style="background:#8B2C1F">✗ 已做（错）</span>') : '';
       qh += '<div class="codebox" data-key="'+key+'"'+(q.expect?' data-expect="'+esc(q.expect)+'"':'')+'>'+
-        '<div class="cb-head"><span class="lb">✏️ 在下方写代码</span>'+(q.expect?'<span class="lb">期望输出：'+esc(q.expect.split('|').join(' 或 '))+'</span>':'')+'</div>'+
-        '<textarea class="cm-target" spellcheck="false" data-starter="'+esc(starter)+'">'+esc(starter)+'</textarea>'+
-        '<div class="cb-foot"><button class="run" onclick="runCode(this)">▶ 运行</button><button class="see-ans" onclick="showAns(this)" data-ans="'+esc(q.code||'')+'">👁 查看答案</button><div class="cout"></div></div>'+
+        '<div class="cb-head"><span class="lb">✏️ 在下方写代码</span>'+(done ? tag : '')+(q.expect?'<span class="lb">期望输出：'+esc(q.expect.split('|').join(' 或 '))+'</span>':'')+'</div>'+
+        '<textarea class="cm-target" spellcheck="false" data-starter="'+esc(starter)+'"'+(done?' readonly':'')+'>'+esc(showCode)+'</textarea>'+
+        '<div class="cb-foot"><button class="run" onclick="runCode(this)"'+(done?' disabled title="已做，不能修改"':'')+'>▶ 运行</button><button class="see-ans" onclick="showAns(this)" data-ans="'+esc(q.code||'')+'"'+(done?' disabled title="已做"':'')+'>👁 查看答案</button><div class="cout"></div></div>'+
         '<div class="vrd"></div></div>';
       if(q.hint) qh+='<div style="font-size:12px;color:var(--muted);margin-top:6px">💡 '+q.hint+'</div>';
       qh+='</div>';
@@ -1859,6 +1863,13 @@ async function runCode(btn){
   var out = box.querySelector('.cout');
   var vrd = box.querySelector('.vrd');
   var expect = box.dataset.expect;
+  var key0 = box.dataset.key;
+  // 讲义内已做锁定（错题本可订正）
+  var inWrong = btn.closest('#page-wrong');
+  if(key0 && quizStat[key0] !== undefined && !inWrong){
+    if(vrd) vrd.textContent = '已做，不能修改（去错题本订正）';
+    return;
+  }
   if(!ensurePy()){
     out.className='cout'; out.textContent='正在加载 Python 运行时（首次约 10-30 秒，之后走缓存）……';
     btn.disabled=true;
@@ -1868,6 +1879,7 @@ async function runCode(btn){
     return;
   }
   var code = cmVal(ta);
+  if(key0){ usercode[key0] = code; store('usercode', usercode); }
   pyStdout='';
   out.className='cout';
   out.textContent='运行中……';
@@ -2160,7 +2172,10 @@ function renderExam(id){
     html+='<div class="quiz'+(edone?' done':'')+'" id="e_'+key+'"><div class="q"><span class="qn">E'+(i+1)+'</span>'+q.q+(edone?'<span class="hall-done-tag">✓ 已通过</span>':'')+'</div>';
     if(q.type==='code'){
       var starter3 = q.start ? q.start : '# 在下方编写代码\n# 运行后与期望输出比对';
-      html+='<div class="codebox" data-key="'+key+'"'+(q.expect?' data-expect="'+esc(q.expect)+'"':'')+'>'+'<div class="cb-head"><span class="lb">✏️ 写代码</span>'+(q.expect?'<span class="lb">期望：'+esc(q.expect.split('|').join(' 或 '))+'</span>':'')+'</div><textarea class="cm-target" spellcheck="false" data-starter="'+esc(starter3)+'">'+esc(starter3)+'</textarea><div class="cb-foot"><button class="run" onclick="runCode(this)">▶ 运行</button><button class="see-ans" onclick="showAns(this)" data-ans="'+esc(q.code||'')+'">👁 查看答案</button><div class="cout"></div></div><div class="vrd"></div></div></div>';
+      var ucode3 = (usercode && usercode[key] !== undefined) ? usercode[key] : null;
+      var showCode3 = edone && ucode3 !== null ? ucode3 : starter3;
+      var tag3 = edone ? (quizStat[key] === 1 ? '<span class="hall-done-tag">✓ 已通过</span>' : '<span class="hall-done-tag" style="background:#8B2C1F">✗ 已做（错）</span>') : '';
+      html+='<div class="codebox" data-key="'+key+'"'+(q.expect?' data-expect="'+esc(q.expect)+'"':'')+'>'+'<div class="cb-head"><span class="lb">✏️ 写代码</span>'+(edone ? tag3 : '')+(q.expect?'<span class="lb">期望：'+esc(q.expect.split('|').join(' 或 '))+'</span>':'')+'</div><textarea class="cm-target" spellcheck="false" data-starter="'+esc(starter3)+'"'+(edone?' readonly':'')+'>'+esc(showCode3)+'</textarea><div class="cb-foot"><button class="run" onclick="runCode(this)"'+(edone?' disabled title="已做，不能修改"':'')+'>▶ 运行</button><button class="see-ans" onclick="showAns(this)" data-ans="'+esc(q.code||'')+'"'+(edone?' disabled title="已做"':'')+'>👁 查看答案</button><div class="cout"></div></div><div class="vrd"></div></div></div>';
     } else {
       html+=q.options.map(function(o,oi){return '<button class="opt" data-q="'+key+'" data-i="'+oi+'" onclick="checkExam(this)">'+String.fromCharCode(65+oi)+'. '+o+'</button>'}).join('')+'<div class="fb"></div><div class="explain"><b>解析：</b>'+q.explain+'</div></div>';
     }
@@ -2201,7 +2216,8 @@ function renderWrong(){
     html+='<div class="wrong-item"><div class="wq">'+w.c.no+' · Q'+(w.i+1)+'：'+w.q.q+'</div>';
     if(w.q.type==='code'){
       var starter4 = w.q.start ? w.q.start : '# 在下方重写代码\n# 运行通过后自动移入已订正';
-      html+='<div class="codebox" data-key="'+key+'"'+(w.q.expect?' data-expect="'+esc(w.q.expect)+'"':'')+'>'+'<div class="cb-head"><span class="lb">✏️ 重写代码</span></div><textarea class="cm-target" spellcheck="false" data-starter="'+esc(starter4)+'">'+esc(starter4)+'</textarea><div class="cb-foot"><button class="run" onclick="runCode(this)">▶ 运行</button><button class="see-ans" onclick="showAns(this)" data-ans="'+esc(w.q.code||'')+'">👁 查看答案</button><div class="cout"></div></div><div class="vrd"></div></div><div class="reason">💡 '+w.q.hint+'</div>';
+      var wcode = (usercode && usercode[key] !== undefined) ? usercode[key] : starter4;
+      html+='<div class="codebox" data-key="'+key+'"'+(w.q.expect?' data-expect="'+esc(w.q.expect)+'"':'')+'>'+'<div class="cb-head"><span class="lb">✏️ 重写代码 <span style="font-size:11px;color:var(--muted)">（你上次写的：）</span></span></div><textarea class="cm-target" spellcheck="false" data-starter="'+esc(starter4)+'">'+esc(wcode)+'</textarea><div class="cb-foot"><button class="run" onclick="runCode(this)">▶ 运行</button><button class="see-ans" onclick="showAns(this)" data-ans="'+esc(w.q.code||'')+'">👁 查看答案</button><div class="cout"></div></div><div class="vrd"></div></div><div class="reason">💡 '+w.q.hint+'</div>';
     } else {
       html+=w.q.options.map(function(o,oi){return '<button class="opt" data-q="'+key+'" data-i="'+oi+'" onclick="checkChoice(this)">'+String.fromCharCode(65+oi)+'. '+o+'</button>'}).join('')+'<div class="fb"></div><div class="explain"><b>解析：</b>'+w.q.explain+'</div>';
     }
@@ -2380,7 +2396,7 @@ function renderAbout(){
 /* ================= 导出 / 导入 ================= */
 function exportData(){
   var out={};
-  ['lessons','ch','hall','qstat','wrong','fixed','log'].forEach(function(k){ out[k]=load(k,null); });
+  ['lessons','ch','hall','qstat','usercode','wrong','fixed','log'].forEach(function(k){ out[k]=load(k,null); });
   var blob=new Blob([JSON.stringify(out)],{type:'application/json'});
   var a=document.createElement('a');
   a.href=URL.createObjectURL(blob); a.download='python-academy-progress.json';
@@ -2420,7 +2436,7 @@ function doClearProgress(){
     return;
   }
   // 只清学习数据，保留界面偏好（折叠状态等）
-  var learnKeys = ['lessons','ch','hall','qstat','wrong','fixed','log'];
+  var learnKeys = ['lessons','ch','hall','qstat','usercode','wrong','fixed','log'];
   learnKeys.forEach(function(k){ localStorage.removeItem('pyc_'+k); });
   location.reload();
 }
@@ -2632,7 +2648,7 @@ function sbMsg(t, ok){
 function sbPack(){
   return {
     lessons: load('lessons', []), ch: load('ch', []), hall: load('hall', {}),
-    qstat: load('qstat', {}), wrong: load('wrong', []), fixed: load('fixed', []), log: load('log', [])
+    qstat: load('qstat', {}), usercode: load('usercode', {}), wrong: load('wrong', []), fixed: load('fixed', []), log: load('log', [])
   };
 }
 /* ===== 游客模式 ===== */
@@ -2654,7 +2670,7 @@ function hideGuestBar(){
 function userCardClick(){ if(load('guest', 0) && !sbSession()){ showLogin(); } else { openManageModal(); } }
 /* 合并两端进度：数组取并集去重，对象取键并集，不互相覆盖 */
 var MERGE_ARR = ['lessons','ch','wrong','fixed','log'];
-var MERGE_OBJ = ['hall','qstat'];
+var MERGE_OBJ = ['hall','qstat','usercode'];
 /* 类型清洗：把错误类型的数据重置为正确默认，防止污染传播（本地/云端都可能脏） */
 function sanitizeProgress(d){
   var out = {};
@@ -2675,6 +2691,7 @@ function storeAllProgress(d){
   if(d.ch !== undefined) chDone = d.ch;
   if(d.hall !== undefined) hallDone = d.hall;
   if(d.qstat !== undefined) quizStat = d.qstat;
+  if(d.usercode !== undefined) usercode = d.usercode;
   if(d.wrong !== undefined) wrongPool = d.wrong;
   if(d.fixed !== undefined) fixedPool = d.fixed;
   if(d.log !== undefined) studyLog = d.log;
