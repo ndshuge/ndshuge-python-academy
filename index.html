@@ -1586,7 +1586,7 @@ function toggleLesson(k){
 }
 
 /* ================= 章节选择 ================= */
-function chIsDone(c){return chDone.indexOf(c.id)>-1}
+function chIsDone(c){return chQuizDone(c) >= (c.quiz ? c.quiz.length : 0)}
 function chQuizDone(c){return c.quiz?c.quiz.filter(function(q,i){return quizStat[c.id+'_'+i]!==undefined}).length:0}
 function renderChSelect(){
   var h='<div class="page-head">📖 课程讲义</div><div class="page-sub">'+CHAPTERS.length+' 章课程体系 · 全部讲义已就位</div><div class="ch-grid">';
@@ -2074,7 +2074,7 @@ function settleByButton(cid){
   var info = { pct:pct, correct:correct, total:answered, totalAll:total, unanswered:total-answered, dur:dur, allCorrect:allCorrect, ts:Date.now(), exam:false, pop:true };
   settleStore['settle_'+c.id] = info;
   storeSettle();
-  if(allCorrect && chDone.indexOf(c.id) === -1){
+  if(allDone && chDone.indexOf(c.id) === -1){
     chDone.push(c.id); store('ch', chDone);
     renderChSelect();
   }

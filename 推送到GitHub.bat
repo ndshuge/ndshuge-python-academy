@@ -2,7 +2,7 @@
 title 鼠哥 Python 学院一键推送
 cd /d "%~dp0"
 set "TOKEN="
-for /f "delims=" %%i in ('powershell -NoProfile -Command "& { $m = Select-String -LiteralPath 'E:\Hanako的记忆\学习计划\学习\数学\高数教材\部署备忘-普林斯顿学院.md' -Pattern 'ghp_[A-Za-z0-9]+' -AllMatches; $m.Matches[0].Value }"') do set "TOKEN=%%i"
+for /f "delims=" %%i in ('powershell -NoProfile -Command "& { $m = Select-String -LiteralPath 'E:\Hanako的记忆\学习计划\学习\数学\高数教材\部署备忘-普林斯顿学院.md' -Pattern 'ghp_[A-Za-z0-9]+|github_pat_[A-Za-z0-9_]+' -AllMatches; $m.Matches[0].Value }"') do set "TOKEN=%%i"
 set HTTPS_PROXY=http://127.0.0.1:7897
 set HTTP_PROXY=http://127.0.0.1:7897
 
@@ -19,10 +19,10 @@ git branch -M main 2>nul
 echo [1/3] 提交本地改动...
 git add .
 git -c user.name=ndshuge-cloud -c user.email=ndshuge@gmail.com commit -m "update" >nul 2>&1
-echo [Python] 推送...
+echo [%(l)s] 推送...
 git remote remove origin 2>nul
-git remote add origin "https://ndshuge:%TOKEN%@github.com/ndshuge/ndshuge-python-academy.git" >nul 2>&1
-git remote set-url origin "https://ndshuge:%TOKEN%@github.com/ndshuge/ndshuge-python-academy.git" >nul 2>&1
+git remote add origin "%(u)s" >nul 2>&1
+git remote set-url origin "%(u)s" >nul 2>&1
 
 set HTTPS_PROXY=
 set HTTP_PROXY=
