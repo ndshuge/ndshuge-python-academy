@@ -1,72 +1,38 @@
-# 拉里·佩奇 Python 学院 · GitHub 部署备忘
+# Python 学院｜部署和权限备忘
 
-> 建立：2026-08-22 | 状态：已上线 | 由拉里·佩奇维护
+> 本文档替换了包含旧账号、旧本机路径与不安全 Token 用法的历史备忘。请勿将任何 GitHub Personal Access Token 写入脚本、Git URL 或仓库文件。
 
-## 一、最终成果
+## 正式入口
 
-| 项目 | 地址 |
-|---|---|
-| **同学访问链接（Pages）** | https://ndshuge-cloud.github.io/larry-page-python-academy/ |
-| 仓库（源码） | https://github.com/ndshuge-cloud/larry-page-python-academy |
-| GitHub 账号 | ndshuge-cloud（ndshuge@gmail.com） |
-| 查看仓库入口 | https://github.com/ndshuge-cloud?tab=repositories |
+- [源码仓库](https://github.com/ndshuge/ndshuge-python-academy)
+- [GitHub Pages](https://ndshuge.github.io/ndshuge-python-academy/)
+- [Pages 设置](https://github.com/ndshuge/ndshuge-python-academy/settings/pages)
 
-- 单文件 HTML（含 Pyodide 浏览器内 Python 运行时 + CodeMirror 编辑器），进度存各学习者浏览器 localStorage，互不影响。
-- 打开即学，无需登录下载。
+## 正常部署
 
-## 二、本地工作区对应文件
+1. 在 Windows 上使用 GitHub CLI 或 Git Credential Manager 登录；如使用 CLI，可通过 `gh auth login` 完成登录。
+2. 检查 `git status` 与 `git diff`；不要提交 API Key、账号令牌、个人隐私或本机临时文件。
+3. `git add -u` 暂存已跟踪文件；新增文件人工检查后再 `git add <path>`。
+4. `git commit -m "chore: update Python Academy"`。
+5. `git push -u origin HEAD`。如果远端拒绝推送，先同步并解决冲突，**绝不把强制推送当作自动回退**。
 
-| 文件 | 路径 |
-|---|---|
-| 学院源文件 | `E:\Hanako的记忆\学习计划\learn-python\index.html` |
-| 部署目录（本地 git 仓库） | `E:\Hanako的记忆\.tmp\deploy-python\` |
-| 学习计划 | `学习计划\learn-python\学习计划-Python编程从入门到实践.md` |
-| 进度档案 | `学习计划\learn-python\Python之旅-进度.md` |
-| 一键推送脚本 | `学习计划\learn-python\推送到GitHub.bat` |
+根目录的 `推送到GitHub.bat` 会检查远程仓库和当前分支、显示变更并要求确认；`开启Pages.bat` 仅打开设置页，不使用 Token。
 
-## 三、版权红线（务必遵守）
+## Supabase 权限核验
 
-- 仓库里只放原创内容：HTML 学院、学习计划、进度档案。✅
-- **严禁上传**《Python编程从入门到实践》PDF 等整本扫描书——公开仓库会被 GitHub 检测下架甚至封号。只留本地。
+`学院v2-SQL建表.sql`、`学院v2-多学院升级.sql`、`学院v2-权限修复.sql` 是历史迁移资料，**不代表线上正在启用的 RLS 策略，也不应直接重复执行**。
 
-## 四、如何更新课程（核心流程）
+上线前必须分别以匿名用户、用户 A、用户 B 核验：
 
-> **⚠️ 铁律：每次推送完成后，必须在对话里附上同学访问链接**
-> `https://ndshuge-cloud.github.io/larry-page-python-academy/`
+- `profiles` 写入只能修改自己的记录；公开个人信息需最小化。
+- `leaderboard` 只能修改自己的成绩；公共排行只暴露必要字段。
+- `feedback` 的公开读取范围与真实的隐私说明保持一致。
+- `progress` 等个人学习数据需启用、验证行级安全（RLS）。
+- 前端不得包含 `service_role` / `sb_secret_` 等服务端密钥。可发布的前端 API Key 不能代替 RLS。
 
-**方式 A：用户双击脚本（推荐日常用）**
-`推送到GitHub.bat` → 自动提交 + 推送。脚本已用 GBK 编码（Windows cmd 才能正确解析中文）。
+## 验收清单
 
-**方式 B：手动推送（需 Clash 代理 127.0.0.1:7897）**
-```powershell
-$t='ghp_****（见对话记录，勿写入仓库）'
-$env:HTTPS_PROXY='http://127.0.0.1:7897'
-$env:HTTP_PROXY='http://127.0.0.1:7897'
-cd 'E:\Hanako的记忆\.tmp\deploy-python'
-Copy-Item 'E:\Hanako的记忆\学习计划\learn-python\index.html' .\index.html -Force
-git add .
-git -c user.name=ndshuge-cloud -c user.email=ndshuge@gmail.com commit -m "更新说明"
-git remote set-url origin "https://ndshuge-cloud:$t@github.com/ndshuge-cloud/larry-page-python-academy.git"
-git push -u origin main
-git remote set-url origin 'https://github.com/ndshuge-cloud/larry-page-python-academy.git'
-```
-
-**进度兼容守则**：
-- 不要改 localStorage 键名（`pyc_lessons` / `pyc_hall` / `pyc_log`），否则同学已有进度丢失。
-- 新增章节保持编号不重排。
-- 改版前先本地自测。
-
-## 五、令牌管理
-
-- 令牌：`ghp_****（见对话记录，勿写入仓库）`（与微积分学院共用，权限 repo，长期有效）
-- 泄露/轮换：GitHub → Settings → Developer settings → Personal access tokens
-- remote 地址推完即还原，不留令牌痕迹。
-
-## 六、踩过的坑（复盘）
-
-1. **bat 文件编码**：必须存 **GBK（ANSI）**，UTF-8 会被 cmd 按 GBK 误读，`echo` 变 `cho`、中文乱码、命令碎片被当程序执行。
-2. **沙箱审批**：会话环境里外发操作需人工批准——用户需在界面批准框点「批准」（不是对话里回"允许"两个字）。失败就重试，用户批准后放行。
-3. **git 直连 GitHub 不稳**：必须走 Clash 代理（127.0.0.1:7897），否则连接被重置。
-4. **GitHub Push Protection**：`ghp_` 开头的令牌绝不能写进要提交的文件。
-5. **本地 git config 写不进**：用 `git -c user.name=... -c user.email=...` 临时指定。
-6. **文件内容会变**：index.html 改动后，先复制到部署目录再 commit，别直接在部署目录里改。
+- 无痕窗口打开 Pages 页面，确认资源正确加载。
+- 使用两个测试账号模拟同步和跨账号读写，检查数据隔离。
+- 移动端完成账号登录、进度保存和退出登录。
+- 如果旧版脚本或历史 Git 提交曾包含真实令牌，须在 GitHub 账户设置中撤销并轮换。

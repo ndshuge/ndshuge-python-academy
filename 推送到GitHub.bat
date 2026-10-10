@@ -1,57 +1,36 @@
 @echo off
-title 鼠哥 Python 学院一键推送
+setlocal EnableExtensions
+title Python Academy Safe Push
 cd /d "%~dp0"
-set "TOKEN="
-for /f "delims=" %%i in ('powershell -NoProfile -Command "& { $m = Select-String -LiteralPath 'E:\Hanako的记忆\学习计划\学习\数学\高数教材\部署备忘-普林斯顿学院.md' -Pattern 'ghp_[A-Za-z0-9]+|github_pat_[A-Za-z0-9_]+' -AllMatches; $m.Matches[0].Value }"') do set "TOKEN=%%i"
-set HTTPS_PROXY=http://127.0.0.1:7897
-set HTTP_PROXY=http://127.0.0.1:7897
-
-if "%TOKEN%"=="" (
-  echo [错误] 未能读取令牌。
-  pause
+where git >nul 2>&1
+if errorlevel 1 goto ERROR
+git rev-parse --is-inside-work-tree >nul 2>&1
+if errorlevel 1 goto ERROR
+git remote get-url origin 2>nul | findstr /I /C:"github.com/ndshuge/ndshuge-python-academy" >nul
+if errorlevel 1 (
+  echo ERROR: unexpected origin repository.
   exit /b 1
 )
-echo ==========================================
-echo   鼠哥 Python 学院一键推送
-echo ==========================================
-if not exist .git (git init >nul 2>&1)
-git branch -M main 2>nul
-echo [1/3] 提交本地改动...
-git add .
-git -c user.name=ndshuge-cloud -c user.email=ndshuge@gmail.com commit -m "update" >nul 2>&1
-echo [%(l)s] 推送...
-git remote remove origin 2>nul
-git remote add origin "%(u)s" >nul 2>&1
-git remote set-url origin "%(u)s" >nul 2>&1
-
-set HTTPS_PROXY=
-set HTTP_PROXY=
-git push -u origin main 2>err1.txt
-set RES=%errorlevel%
-if not "%RES%"=="0" (
-  echo   直连失败，改用代理重试...
-  set HTTPS_PROXY=http://127.0.0.1:7897
-  set HTTP_PROXY=http://127.0.0.1:7897
-  git push -u origin main 2>err1.txt
-  set RES=%errorlevel%
+for /f "delims=" %%B in ('git branch --show-current') do set "BRANCH=%%B"
+if "%BRANCH%"=="" goto ERROR
+echo Repository: ndshuge/ndshuge-python-academy
+echo Branch: %BRANCH%
+git status --short
+echo New files must be inspected and staged manually; only tracked changes are auto-staged.
+choice /C YN /M "Commit tracked changes and push this branch"
+if errorlevel 2 exit /b 0
+git add -u
+git diff --cached --quiet
+if errorlevel 2 goto ERROR
+if errorlevel 1 (
+  git commit -m "chore: update Python Academy"
+  if errorlevel 1 goto ERROR
 )
-if not "%RES%"=="0" (
-  echo   推送被拒，强制覆盖中...
-  git push -f -u origin main 2>err1.txt
-  set RES=%errorlevel%
-  if not "%RES%"=="0" (
-    set HTTPS_PROXY=http://127.0.0.1:7897
-    set HTTP_PROXY=http://127.0.0.1:7897
-    git push -f -u origin main 2>err1.txt
-    set RES=%errorlevel%
-  )
-)
-git remote set-url origin "https://github.com/ndshuge/ndshuge-python-academy.git" >nul 2>&1
-if "%RES%"=="0" ( echo   Python推送成功 ) else ( echo   Python推送失败 & type err1.txt )
-
-del err1.txt >nul 2>&1
-echo.
-echo ==========================================
-echo   Python:  https://ndshuge.github.io/ndshuge-python-academy/
-echo ==========================================
-pause
+git push -u origin HEAD
+if errorlevel 1 goto ERROR
+echo Push succeeded. No force push was used.
+exit /b 0
+:ERROR
+echo Failed. No force push was attempted. Check credentials, branch and remote.
+echo Authenticate with gh auth login or Git Credential Manager.
+exit /b 1

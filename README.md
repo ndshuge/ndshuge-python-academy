@@ -48,3 +48,7 @@
 ---
 
 © 2026 鼠哥 · 拉里·佩奇 Python 学院
+
+## 安全与素材审查
+
+[Supabase RLS 安全核验清单](docs/RLS_AUDIT.md)
