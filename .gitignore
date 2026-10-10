@@ -1,5 +1,47 @@
-# 本地推送工具，不进仓库
-推送到GitHub.bat
-# 临时文件
+# Python Academy: reviewed deployment scripts and SQL migrations remain tracked.
+# Do not ignore all batch scripts or SQL migrations.
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+*.pem
+*.key
+*.p12
+*.pfx
+*token*.txt
+credentials.local.json
+service-account.local.json
+
+node_modules/
+npm-cache/
+.cache/
+coverage/
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+
+*.log
+*.tmp
+*.bak
+*.old
+*.orig
+*.rej
+*.sqlite
+*.sqlite3
+*.db
+
+# Historical deployment diagnostics
 push_err.txt
 err1.txt
