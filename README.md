@@ -1,5 +1,9 @@
 # 🐭 鼠哥的 Python 学院 🐿️
 
+> **版本定位：历史独立站点（Legacy）。** 这份代码和原有网页用于保留早期学习记录、版本对照和实验路径。**当前整合后的课程入口为 [鼠哥学院 · Python](https://ndshuge.github.io/ndshuge-academy/python.html)**，统一仓库在 [ndshuge-academy](https://github.com/ndshuge/ndshuge-academy)。两版课程与数据行为不保证完全一致，旧版页面不强制跳转。
+
+**[进入当前整合版](https://ndshuge.github.io/ndshuge-academy/python.html)** · **[访问独立旧站](https://ndshuge.github.io/ndshuge-python-academy/)** · [完整学院门户](https://ndshuge.github.io/ndshuge-academy/)
+
 > **由 鼠哥（ndshuge）组织发起，拉里·佩奇 协助开发**
 
 以马瑟斯《Python 编程：从入门到实践（第 3 版）》为蓝本的交互式 Python 学习学院。讲义、练习、代码判题、章节考试、错题本、问答批改一条龙，**打开网页就能学，不用装任何环境**。
